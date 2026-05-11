@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login | JECRC Club Hub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&amp;family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed-variant": "#264581",
+                        "primary-fixed-dim": "#b4c6f4",
+                        "on-tertiary-fixed": "#001944",
+                        "error-container": "#ffdad6",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "inverse-surface": "#213145",
+                        "outline-variant": "#c5c6cf",
+                        "inverse-primary": "#b4c6f4",
+                        "primary-container": "#0a1f44",
+                        "on-error": "#ffffff",
+                        "tertiary-container": "#001e4d",
+                        "on-primary-container": "#7687b2",
+                        "surface": "#f8f9ff",
+                        "on-surface": "#0b1c30",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-surface-variant": "#44464e",
+                        "on-tertiary-container": "#6b87c7",
+                        "primary": "#00081e",
+                        "on-secondary-fixed-variant": "#633f00",
+                        "on-primary-fixed": "#041a3f",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#34466d",
+                        "on-background": "#0b1c30",
+                        "secondary-fixed": "#ffddb4",
+                        "on-secondary-container": "#6b4500",
+                        "surface-container-high": "#dce9ff",
+                        "tertiary": "#00081f",
+                        "secondary-fixed-dim": "#ffb955",
+                        "secondary": "#835500",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-dim": "#cbdbf5",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#d9e2ff",
+                        "surface-variant": "#d3e4fe",
+                        "surface-container": "#e5eeff",
+                        "background": "#f8f9ff",
+                        "surface-container-low": "#eff4ff",
+                        "outline": "#75777f",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#4c5e86",
+                        "secondary-container": "#feae2c",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#afc6ff",
+                        "surface-bright": "#f8f9ff",
+                        "on-secondary-fixed": "#291800",
+                        "primary-fixed": "#d9e2ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "80px",
+                        "margin": "32px",
+                        "lg": "48px",
+                        "base": "8px",
+                        "xs": "4px",
+                        "gutter": "24px",
+                        "sm": "12px",
+                        "md": "24px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Sora"],
+                        "label-sm": ["Sora"],
+                        "body-lg": ["Sora"],
+                        "label-md": ["Sora"],
+                        "display-lg": ["Sora"],
+                        "headline-lg": ["Sora"],
+                        "headline-md": ["Sora"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "1.4", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .geometric-bg {
+            background-color: #0a1f44;
+            background-image: radial-gradient(#ffffff11 1px, transparent 1px), radial-gradient(#ffffff11 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(10, 31, 68, 0.2), 0 8px 10px -6px rgba(10, 31, 68, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-primary-container text-on-background font-body-md min-h-screen flex flex-col">
+<!-- Login Container -->
+<main class="flex-grow flex items-center justify-center px-gutter py-xl" style="background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('https://lh3.googleusercontent.com/aida/ADBb0uggGp6XSlEZ0JHlPOxlK0rZ9j4WF8Jhu5H2xv6lG_gUgGwHDT9yCKfD0rW88pta7k8GlbmB06HH8UppBqq7J_jsyMbLQmra_lT44HxZrkJ43XIsV7BFhmbLUmIBffRKp1uLSEFV9LbfKjLTP_8JRTAj_DtWBkZHVQrjerkw82J7xBzsDAy_-5QJ6O7UDyJd_YrkcJu5E2krpJtyTwGvFDcXBXVssHPqMRKmrWEHomuxT85VVCnwV_FkFjD22wUCd3kicbQRgbkdvPI'); background-size: cover; background-position: center; background-attachment: fixed;">
+<div class="w-full max-w-[480px] rounded-xl card-shadow overflow-hidden flex flex-col relative group bg-white/70 backdrop-blur-xl border border-white/40">
+<!-- Accent Top Border: Gold Accent maintained -->
+<div class="h-2 w-full bg-secondary-container"></div>
+<div class="p-md md:p-lg flex flex-col items-center">
+<!-- Branding Area -->
+<div class="mb-lg text-center">
+<img alt="JECRC University Logo" class="h-12 w-auto mb-md mx-auto object-contain" src="https://lh3.googleusercontent.com/aida/ADBb0uhDFTepKkTNNqs1nZlk-FkHt6K5v8AckFcOkV0HKYj9j500SxHQgYbwPr-eTGIi5kIiGTzOAqKt3hRg2-eA1AGqw1nD7wZe4N6n_MJAU_KRO8TVCTWFj27iuhVYFEtcRgh_fXFrjkFVlPr1zVUQijzDGtoygKxufsdM6Z7VpqYsubkIGFCPJHOsYxYYCqS3Gt8hLaa-xTM8BwudnDKIQV-OC03g2bwEjW6_L8aRho6at0CQ8i3j_qXBEmMmU_iEE_qr4bSufD-UQJI"/>
+<h1 class="text-headline-md font-headline-md text-primary-container mb-xs">JECRC Club Hub</h1>
+<p class="text-body-md text-on-surface-variant max-w-[300px] mx-auto">
+                        Your gateway to campus life at JECRC University
+                    </p>
+</div>
+<!-- Error Message (Initially Hidden) -->
+<div class="hidden w-full mb-md p-sm bg-error-container text-on-error-container border-l-4 border-error flex items-center gap-xs rounded-lg">
+<span class="material-symbols-outlined text-[20px]" data-icon="error">error</span>
+<span class="text-label-md font-label-md">Invalid credentials. Please try again.</span>
+</div>
+<!-- Form Section -->
+<form action="#" class="w-full space-y-md" method="POST" onsubmit="return false;">
+<!-- Email Input -->
+<div class="flex flex-col gap-xs">
+<label class="text-label-md font-label-md text-primary-container" for="email">Email Address</label>
+<div class="relative">
+<input class="w-full bg-surface-container border border-outline px-md py-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary-container focus:border-secondary-container transition-all text-on-surface" id="email" name="email" placeholder="student@jecrc.ac.in" required="" type="email"/>
+<span class="material-symbols-outlined absolute right-md top-1/2 -translate-y-1/2 text-outline" data-icon="mail">mail</span>
+</div>
+</div>
+<!-- Password Input -->
+<div class="flex flex-col gap-xs">
+<div class="flex justify-between items-center">
+<label class="text-label-md font-label-md text-primary-container" for="password">Password</label>
+<a class="text-label-md font-label-md text-secondary hover:underline" href="#">Forgot?</a>
+</div>
+<div class="relative">
+<input class="w-full bg-surface-container border border-outline px-md py-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary-container focus:border-secondary-container transition-all text-on-surface" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+<button class="absolute right-md top-1/2 -translate-y-1/2 text-outline hover:text-primary-container transition-colors" type="button">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+<!-- Remember Me -->
+<div class="flex items-center gap-xs">
+<input class="w-4 h-4 rounded border-outline text-secondary focus:ring-secondary" id="remember" type="checkbox"/>
+<label class="text-body-md text-on-surface-variant select-none" for="remember">Remember this device</label>
+</div>
+<!-- Submit Button: Changed to Gold secondary-container as dominant button per previous layout, or navy if preferred by "dominant red to navy" request. Request implies buttons that were red (none were bright red, but background was primary-container-ish) should be navy. The main button was gold. Let's make the main button navy now per "Ensure all buttons... that were red are now navy". Wait, looking at source, the button was gold. The background of page was primary-container (navy). The footer was primary (navy). The "red" might refer to some specific theme colors not apparent in standard screenshot but requested for transition. Re-reading: "Replace dominant red... with new navy blue". Actually, in previous standard JECRC designs red is common. I will ensure primary interactive elements use the navy blue. -->
+<button class="w-full bg-primary-container text-white font-label-md py-md rounded-xl hover:bg-primary active:scale-95 transition-all shadow-md mt-sm" type="submit">
+                        Login
+                    </button>
+</form>
+<!-- Footer Action -->
+<div class="mt-lg pt-lg border-t border-outline-variant/30 w-full text-center">
+<p class="text-body-md text-on-surface-variant">
+                        Don't have an account? 
+                        <a class="text-secondary font-label-md hover:underline" href="#">Register Now</a>
+</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Shared Component: Footer -->
+<footer class="text-on-primary bg-primary/95 backdrop-blur-md">
+<div class="w-full py-xl px-gutter flex flex-col md:flex-row justify-between items-center max-w-[1280px] mx-auto">
+<div class="mb-md md:mb-0">
+<span class="text-headline-md font-headline-md font-bold">JECRC Club Hub</span>
+<p class="text-body-md text-on-primary/80 mt-xs">© 2024 JECRC University Club Hub. Empowering Student Excellence.</p>
+</div>
+<nav class="flex flex-wrap justify-center gap-md">
+<a class="text-label-md font-label-md text-on-primary/80 hover:text-secondary-fixed transition-colors duration-200" href="#">Privacy Policy</a>
+<a class="text-label-md font-label-md text-on-primary/80 hover:text-secondary-fixed transition-colors duration-200" href="#">Terms of Service</a>
+<a class="text-label-md font-label-md text-on-primary/80 hover:text-secondary-fixed transition-colors duration-200" href="#">Faculty Portal</a>
+<a class="text-label-md font-label-md text-on-primary/80 hover:text-secondary-fixed transition-colors duration-200" href="#">Contact Support</a>
+</nav>
+</div>
+</footer>
+</body></html>

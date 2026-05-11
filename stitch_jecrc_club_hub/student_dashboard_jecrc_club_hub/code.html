@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>JECRC Club Hub - Student Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&amp;family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>.geometric-pattern {
+    background-image: radial-gradient(circle at 2px 2px, rgba(10, 31, 68, 0.03) 1px, transparent 0);
+    background-size: 24px 24px
+    }
+.hero-pattern {
+    background-image: linear-gradient(135deg, rgba(10, 31, 68, 0.95) 0%, rgba(0, 8, 30, 1) 100%), url(https://lh3.googleusercontent.com/aida-public/AB6AXuBUzGXqclzDKxe1j84-OaOmc0bD0z8BIUagu4QbUh5Rp3rv8smjt0DluvUHVU43bt1lAONpzgeIl3Abpe9AgsoXfjiTrcc8638Ym89_rRGMI79OQDY_OFRQxBVVuJj8k7LsNCo1YpH6sEdVGh7ZfX_C0jzrDVPOX-vyXM672k8gEzAk__JcuGdxRci_pooNFXRV05b7drh5hMx1Hzg2gYoBruUaJ1J8phnNvmU3tJMk6_H17C5BI0yvXJhz6f7MVzEI6sUclRdfOWRp);
+    background-size: cover;
+    background-position: center
+    }</style>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"secondary-fixed-dim": "#c8c8b0", background: "#fff8f6", "tertiary-fixed": "#ffdcc3", "surface-dim": "#ffd0bd", "on-error": "#ffffff", "inverse-surface": "#581e00", "secondary-fixed": "#e4e4cc", "surface-container": "#ffe9e2", "on-tertiary-container": "#fffbff", "tertiary-container": "#a76426", "primary-container": "#ba5642", "on-secondary": "#ffffff", "surface-tint": "#9e412f", "inverse-primary": "#ffb4a5", "on-primary-fixed": "#3e0400", "surface-container-high": "#ffe2d7", "on-background": "#360f00", "on-surface": "#360f00", "on-tertiary": "#ffffff", "primary-fixed": "#ffdad3", secondary: "#5e604d", "outline-variant": "#e6bcbd", "on-secondary-fixed-variant": "#474836", "on-tertiary-fixed-variant": "#6e3900", primary: "#9b3f2d", "on-primary-container": "#fffbff", "surface-variant": "#ffdbcd", "secondary-container": "#e1e1c9", "on-secondary-container": "#636451", "error-container": "#ffdad6", "on-surface-variant": "#5d3f40", "surface-container-highest": "#ffdbcd", "surface-container-lowest": "#ffffff", "on-tertiary-fixed": "#2f1500", "on-primary": "#ffffff", tertiary: "#8a4d0e", "on-error-container": "#93000a", "surface-container-low": "#fff1ec", "tertiary-fixed-dim": "#ffb77d", "on-primary-fixed-variant": "#7f2a1a", error: "#ba1a1a", outline: "#916e6f", "on-secondary-fixed": "#1b1d0e", "inverse-on-surface": "#ffede7", "surface-bright": "#fff8f6", surface: "#fff8f6", "primary-fixed-dim": "#ffb4a5"}, borderRadius: {DEFAULT: "1rem", lg: "2rem", xl: "3rem", full: "9999px"}, spacing: {xl: "64px", sm: "12px", xs: "4px", gutter: "24px", "container-max": "1280px", md: "24px", base: "8px", lg: "40px"}, fontFamily: {h3: ["Sora"], "body-lg": ["DM Sans"], h2: ["Sora"], h1: ["Sora"], label: ["DM Sans"], "body-md": ["DM Sans"]}, fontSize: {h3: ["24px", {lineHeight: "1.4", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "1.6", fontWeight: "400"}], h2: ["32px", {lineHeight: "1.3", fontWeight: "600"}], h1: ["40px", {lineHeight: "1.2", fontWeight: "700"}], label: ["14px", {lineHeight: "1", letterSpacing: "0.05em", fontWeight: "600"}], "body-md": ["16px", {lineHeight: "1.6", fontWeight: "400"}]}}}};</script>
+</head>
+<body class="bg-background font-body-md text-on-background geometric-pattern min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim shadow-[0_4px_12px_rgba(10,31,68,0.08)] sticky top-0 z-50">
+<div class="flex justify-between items-center w-full px-gutter max-w-container-max mx-auto h-20">
+<!-- Brand Logo -->
+<div class="flex items-center gap-base"><img alt="JECRC University Logo" class="h-12 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/ADBb0uhDFTepKkTNNqs1nZlk-FkHt6K5v8AckFcOkV0HKYj9j500SxHQgYbwPr-eTGIi5kIiGTzOAqKt3hRg2-eA1AGqw1nD7wZe4N6n_MJAU_KRO8TVCTWFj27iuhVYFEtcRgh_fXFrjkFVlPr1zVUQijzDGtoygKxufsdM6Z7VpqYsubkIGFCPJHOsYxYYCqS3Gt8hLaa-xTM8BwudnDKIQV-OC03g2bwEjW6_L8aRho6at0CQ8i3j_qXBEmMmU_iEE_qr4bSufD-UQJI"/></div>
+<!-- Search Bar (on_left) -->
+<div class="hidden md:flex flex-1 max-w-md ml-lg">
+<div class="relative w-full group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-xl focus:border-secondary-container focus:ring-1 focus:ring-secondary-container transition-all outline-none font-body-md" placeholder="Search clubs, events, or resources..." type="text"/>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="hidden lg:flex items-center gap-md mx-md">
+<a class="text-secondary dark:text-secondary-fixed-dim border-b-2 border-secondary dark:border-secondary-fixed-dim pb-1 font-bold font-label text-label hover:text-secondary transition-colors duration-200" href="#">Dashboard</a>
+<a class="text-on-surface-variant dark:text-outline-variant font-label text-label hover:text-secondary transition-colors duration-200" href="#">Clubs</a>
+<a class="text-on-surface-variant dark:text-outline-variant font-label text-label hover:text-secondary transition-colors duration-200" href="#">Events</a>
+<a class="text-on-surface-variant dark:text-outline-variant font-label text-label hover:text-secondary transition-colors duration-200" href="#">Directory</a>
+</nav>
+<!-- User Actions & Profile -->
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-sm pr-md border-r border-outline-variant/30">
+<div class="text-right hidden sm:block">
+<p class="font-label text-label text-on-surface font-bold">Arjun Sharma</p>
+<p class="text-[12px] text-on-surface-variant">B.Tech 3rd Year</p>
+</div>
+<img alt="Student Profile Photo" class="w-10 h-10 rounded-full border-2 border-secondary-container object-cover" data-alt="A professional close-up portrait of a young Indian male student with a friendly expression. He is wearing a clean white shirt, standing against a softly blurred university library background. The lighting is warm and cinematic, emphasizing a professional yet approachable student persona in a modern academic environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBI0-fEuS2jG9FCwqDUhuszu9KPFZkz65fSXYCNOo5skd-ZNrbDv7N6tEvQ5pfMOBNaRWt4NuHFrnT88fJPsdIRsPIc1Dow0by5OQW7m2MOjo1zt372tu-09W_kSG1SYRHZDYqwVDzgRb22IQr_1jYDnIhrRqnIBlbktHM5D02dAsSLVXsgij6FBJeGgp1J8UBLF_-FUcGzVkpH8beG3ud4LNJC9_VwYIVgaMmf8tZTY1UuxwfbdOJOnAfdawEpyNl-t4aXYknLvhO4"/>
+</div>
+<button class="font-label text-label text-on-surface-variant hover:text-secondary active:scale-95 transition-all duration-200 cursor-pointer">Logout</button>
+</div>
+</div>
+</header>
+<!-- Hero Section -->
+<section class="hero-pattern relative overflow-hidden py-xl md:py-24 text-white">
+<div class="absolute inset-0 bg-primary-container/60 backdrop-blur-[2px]"></div>
+<div class="relative max-w-container-max mx-auto px-gutter text-center md:text-left z-10">
+<div class="max-w-2xl">
+<h1 class="font-h1 text-h1 mb-md leading-tight tracking-tight">Discover Your People</h1>
+<p class="font-body-lg text-body-lg text-on-primary-container mb-lg">Fuel your passions, build your network, and leave your mark at JECRC. Explore university clubs that align with your ambitions.</p>
+<div class="flex flex-col sm:flex-row gap-base">
+<button class="bg-secondary-container text-on-secondary-container px-lg py-3 rounded-xl font-bold hover:bg-secondary-fixed transition-all flex items-center justify-center gap-sm">
+                        Start Exploring
+                        <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<button class="border-2 border-white/30 backdrop-blur-sm px-lg py-3 rounded-xl font-bold hover:bg-white/10 transition-all">View My Groups</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Main Content -->
+<main class="flex-grow max-w-container-max mx-auto w-full px-gutter py-xl">
+<!-- Filter Bar -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-md mb-xl">
+<div class="flex flex-wrap items-center gap-sm">
+<button class="px-md py-2 rounded-full bg-primary-container text-white font-label text-label shadow-sm hover:shadow-md transition-all">All</button>
+<button class="px-md py-2 rounded-full bg-surface border border-outline-variant text-on-surface-variant font-label text-label hover:border-secondary transition-all">Technical</button>
+<button class="px-md py-2 rounded-full bg-surface border border-outline-variant text-on-surface-variant font-label text-label hover:border-secondary transition-all">Cultural</button>
+<button class="px-md py-2 rounded-full bg-surface border border-outline-variant text-on-surface-variant font-label text-label hover:border-secondary transition-all">Sports</button>
+<button class="px-md py-2 rounded-full bg-surface border border-outline-variant text-on-surface-variant font-label text-label hover:border-secondary transition-all">Literary</button>
+<button class="px-md py-2 rounded-full bg-surface border border-outline-variant text-on-surface-variant font-label text-label hover:border-secondary transition-all">Social</button>
+</div>
+<div class="flex items-center gap-sm text-on-surface-variant">
+<span class="material-symbols-outlined">filter_list</span>
+<span class="font-label text-label">Sort by: Popularity</span>
+</div>
+</div>
+<!-- Club Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg">
+<!-- Coding Ninjas -->
+<div class="group bg-surface-container-lowest rounded-xl p-md shadow-[0_4px_12px_rgba(10,31,68,0.08)] border-t-2 border-transparent hover:border-secondary-container hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
+<div class="mb-md relative rounded-lg overflow-hidden h-48">
+<img alt="Coding Ninjas Banner" class="w-full h-full object-cover" data-alt="A clean, high-contrast overhead shot of a modern programmer's workspace. A mechanical keyboard is lit with soft amber light, next to a sleek laptop displaying complex lines of code. The background is a dark wooden desk with professional tech gadgets. The aesthetic is focused, clean, and highly professional, utilizing the navy and gold color scheme of the brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQDNsdL_BW0i1xaFG8lO_LY2M01GwW0kxGbMyQho6gYNs3X9MrXmllVUvBRvLbyTnpwYzuRbRepcMr5Jn876__oWNY9LiwO5eR16LH5bmjReJeKS80T-Ce89ehA5oAWQmWaTbmav_1x94-k110FfFwoC85Dz0sYvdZbFf_O-mK-LLA-1nVIv-PhJ8DwQD0uxJI5P18fQ_IUcrWhCfR72d5Cdi5csvfOh0F380JCtEsmI88q5OBio-mp66iiVkk6PWYLuT07tix87of"/>
+<div class="absolute top-3 left-3 bg-primary-container/90 text-on-primary-container px-3 py-1 rounded-full text-[12px] font-bold uppercase tracking-wider">Technical</div>
+</div>
+<h3 class="font-h3 text-h3 mb-sm group-hover:text-secondary transition-colors">Coding Ninjas</h3>
+<p class="font-body-md text-body-md text-on-surface-variant flex-grow mb-md">Unleash your logic and conquer the digital realm with cutting-edge competitive programming and web technologies.</p>
+<div class="flex items-center justify-between pt-md border-t border-outline-variant/10">
+<div class="flex -space-x-2">
+<img alt="Member 1" class="w-8 h-8 rounded-full border-2 border-white" data-alt="Small avatar of a smiling student." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXUuF1OqIG3Mn9hEy0TaggHihoLb9-W0B7JiGqmTftx3jfJn7NU0_ZkNlVTJAVpyNjJKp8-y_rcHt9bIhymUjcfdVNVAWUzZ2c5mQyVamw1RZbD3aY2FCAu8VeLDNw2Og6PmLT3Ytz5xkZtaB2QwqYMu4IyY43X7ZxmyM3uSwxJKm6bE3YhWFop--0xWtn5vyvMBHMKSoGVs_kOm4rwUG-wWn1zvnTMwQGFRuac31dmL7nbYGWqlD7kWF4VBe6jL-cVz8cK25O91Zc"/>
+<img alt="Member 2" class="w-8 h-8 rounded-full border-2 border-white" data-alt="Small avatar of a smiling student." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpIkFpXEhaiqX-iD7MPd_ce2mM5FCCPcfX3nmxIxYjlTzbmNXwgSat6xxAAP8YQ1Ys5y9BRaxMw9dCm0E__FnaX6dhAB2lvuysdYcH5T_LJUaxZVMAaLmhowQcYw0Pc-MXQls-M445-vfQJ-5umANE0BB1YvkekH4qeoYbsoXhWHTcq151_G82BS-YsXsSiWSe73TNApm-YuDhtrdOE85i9ia4QsAID67CDR0FaWReRHfvGe9W9KbRtXHkZkyuD3u5q142f5vQtbrs"/>
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-[10px] font-bold border-2 border-white">+45</div>
+</div>
+<button class="text-primary font-bold font-label text-label hover:text-secondary transition-all flex items-center gap-xs">
+                        View Details
+                        <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+</button>
+</div>
+</div>
+<!-- Data Science Hub -->
+<div class="group bg-surface-container-lowest rounded-xl p-md shadow-[0_4px_12px_rgba(10,31,68,0.08)] border-t-2 border-transparent hover:border-secondary-container hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
+<div class="mb-md relative rounded-lg overflow-hidden h-48">
+<img alt="Data Science Hub Banner" class="w-full h-full object-cover" data-alt="An abstract visualization of complex data networks and glowing interconnected nodes. The background is a deep navy blue with brilliant gold and amber light streams representing data flow. The visual style is high-tech, futuristic, and clean, conveying the intelligence and depth of data science analytics." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpRUp35kWqV0TbtoUXFSo_uznDY_7dO3BJgRa8d-sN-JVrroyVZJTX21pVFzF8KzK9i7seeQzc_REdNw326FXwuUpVrdXLTzFJqiV_7_0wiawCvI9Oz6uvyVGcWDoNsHuJNkgcl7NMtBvXVglAJVwGG-2JLzOHyjbKsY0Ng2KNs8xY3HxiINmbdDijIA12DRFAp6UlYa6fGe5CKF7uPK_mP9Gv6GwQzdKwTxjS3G_Tp0vJCDlEIovJTGhXpiohdn-nIOAEjHOSVQMg"/>
+<div class="absolute top-3 left-3 bg-primary-container/90 text-on-primary-container px-3 py-1 rounded-full text-[12px] font-bold uppercase tracking-wider">Technical</div>
+</div>
+<h3 class="font-h3 text-h3 mb-sm group-hover:text-secondary transition-colors">Data Science Hub</h3>
+<p class="font-body-md text-body-md text-on-surface-variant flex-grow mb-md">Dive deep into data analytics, machine learning, and AI to transform raw information into actionable insights.</p>
+<div class="flex items-center justify-between pt-md border-t border-outline-variant/10">
+<div class="flex -space-x-2">
+<img alt="Member 1" class="w-8 h-8 rounded-full border-2 border-white" data-alt="Small avatar of a smiling student." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWj3Dbw5uyu2GNeKsGoEL39GYwBgSc0rvxIfdUAT7OiU6FfhHwBHSI91jB7Tplh9lJ9Qsd91tkITS97K5wCb_mJwzhW5ZKbbss5tkyM5eA7m91tAfJRpIMukguIc2Rd0U3UalPX155czMQSIgxmtElIHUg7eXQcxK7OT3-5-rUaN7ftPAzg_JS7lM51X0nlEPLmHsnU_Y4bPs0Ifz4dNBxK1_60WvH4eF0B8iQtERwxiQvqFVP6sLELdG0Pq8qTJVbAvYlAjHLlbbs"/>
+<img alt="Member 2" class="w-8 h-8 rounded-full border-2 border-white" data-alt="Small avatar of a smiling student." src="https://lh3.googleusercontent.com/aida-public/AB6AXuChyoF_Cu4JTlvRDMGiR7g1MlWOy0-BJ8mapxtowTU0K_gwYYvNetSqH7G-23o8fLmlIh_FK4a4it4KOS4iEp-QmlPLS35hBCagSWZvR7acLg-gsYtaJIIV4Q8-wJ3ezZCx5NHdOGGiTVQlTwPiIaTPOo3s44RmdTFfj84d1bTJh3Sk8VpGIjZ3tOxlvGKDU-bFFbdNH_BnyziYBMQB4fiymsNm5da7xeFGidgTkFhR2jTKvTKRhjrNwRNGi-5rhqvgyUzd3FWVIPHi"/>
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-[10px] font-bold border-2 border-white">+32</div>
+</div>
+<button class="text-primary font-bold font-label text-label hover:text-secondary transition-all flex items-center gap-xs">
+                        View Details
+                        <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+</button>
+</div>
+</div>
+<!-- Robotics Collective -->
+<div class="group bg-surface-container-lowest rounded-xl p-md shadow-[0_4px_12px_rgba(10,31,68,0.08)] border-t-2 border-transparent hover:border-secondary-container hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
+<div class="mb-md relative rounded-lg overflow-hidden h-48">
+<img alt="Robotics Collective Banner" class="w-full h-full object-cover" data-alt="A detailed view of a robotic arm assembly in a bright, modern university engineering lab. The focus is on the intricate gears and golden copper wiring. Soft natural sunlight streams through large windows in the background. The mood is industrious, innovative, and clean, highlighting precision engineering and student creativity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFSxsNHi_5JDaO2qO5cCDMonnGQ6DRe9SFr94u-Wc_0PAFu9ja5qQy0tU5cBNZoL8Z0j_TGTXSimFgKBjoUFJSa-FWdTWDag_7lWxkovy1DFCnyYGXxYvaOXgGgbZnaENWayVVTbKBUIMzsV8MdSo8Dbn_FfYHI6DqI941SA2oTVszZRGUEiyr7oDk_fjxCMw6fFsVPwzA3mA6nePqSg8zGYVYfP3Geq6T0Eq-40pzAzbRTN1DPHLGx212Cz4kkKLgGK4JHBKARf0V"/>
+<div class="absolute top-3 left-3 bg-primary-container/90 text-on-primary-container px-3 py-1 rounded-full text-[12px] font-bold uppercase tracking-wider">Technical</div>
+</div>
+<h3 class="font-h3 text-h3 mb-sm group-hover:text-secondary transition-colors">Robotics Collective</h3>
+<p class="font-body-md text-body-md text-on-surface-variant flex-grow mb-md">Building the future, one circuit at a time. Engage in hands-on hardware design and automation projects.</p>
+<div class="flex items-center justify-between pt-md border-t border-outline-variant/10">
+<div class="flex -space-x-2">
+<img alt="Member 1" class="w-8 h-8 rounded-full border-2 border-white" data-alt="Small avatar of a smiling student." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKMfDuMmFFQL9t_6I1wjrOot7Vs3njkV2HQQn0KwdSqOuRnIWHLYx_jC8i3J-8jHhwVIAUl4bXxlNnQpjZy_SZdACOQYjFUxjqWxTClQmJaNGoUHF-USf_liZfmzHe9Uk2YE42BbZAqKDXB8-PF2w6XUrsLISd2M-SHWqfGOfj1ZpjvGjDoxG1euSOmONIM96gADjo98sjfVUZhjOYfBj7n2V01PYbLTv-whUPsYE3cjzWEt0jj8tuc5_IOwIuOf8ddi5imMXjPKt5"/>
+<img alt="Member 2" class="w-8 h-8 rounded-full border-2 border-white" data-alt="Small avatar of a smiling student." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaTUN7bx38V_L8XcFEkOBjY8nMWxdUUGwZKp7yb0WTGTO6AmzkKr8DfB5OKSwbMibUmcmpfYChq2eHA7RkLZx9Xdy63RPRxybUK2sKZvygiCXAJI3PVmfUaiPuEeMCxc9QzT41DClw4XOMBymaZC0H68Y98dKNO1VBuN5_675WXJxDPzFUoJpCjAyNXngG8i_brAF709VhDx3R5LPGUAau5JlbK6TfgeyFEZ2-fqOze911W-3F5f4iNziEHj6oYNUNb3KCodEcc8RL"/>
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-[10px] font-bold border-2 border-white">+18</div>
+</div>
+<button class="text-primary font-bold font-label text-label hover:text-secondary transition-all flex items-center gap-xs">
+                        View Details
+                        <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+</button>
+</div>
+</div>
+<!-- Skeleton Loader 1 -->
+<div class="bg-surface-container animate-pulse rounded-xl p-md border border-outline-variant/20 flex flex-col h-full opacity-60">
+<div class="bg-outline-variant/30 rounded-lg h-48 mb-md"></div>
+<div class="h-6 bg-outline-variant/30 rounded w-2/3 mb-sm"></div>
+<div class="h-4 bg-outline-variant/30 rounded w-full mb-xs"></div>
+<div class="h-4 bg-outline-variant/30 rounded w-5/6 mb-md"></div>
+<div class="flex justify-between items-center mt-auto">
+<div class="w-20 h-8 bg-outline-variant/30 rounded-full"></div>
+<div class="w-24 h-4 bg-outline-variant/30 rounded"></div>
+</div>
+</div>
+<!-- Skeleton Loader 2 -->
+<div class="bg-surface-container animate-pulse rounded-xl p-md border border-outline-variant/20 flex flex-col h-full opacity-40">
+<div class="bg-outline-variant/30 rounded-lg h-48 mb-md"></div>
+<div class="h-6 bg-outline-variant/30 rounded w-1/2 mb-sm"></div>
+<div class="h-4 bg-outline-variant/30 rounded w-full mb-xs"></div>
+<div class="h-4 bg-outline-variant/30 rounded w-3/4 mb-md"></div>
+<div class="flex justify-between items-center mt-auto">
+<div class="w-20 h-8 bg-outline-variant/30 rounded-full"></div>
+<div class="w-24 h-4 bg-outline-variant/30 rounded"></div>
+</div>
+</div>
+<!-- Skeleton Loader 3 -->
+<div class="bg-surface-container animate-pulse rounded-xl p-md border border-outline-variant/20 flex flex-col h-full opacity-20">
+<div class="bg-outline-variant/30 rounded-lg h-48 mb-md"></div>
+<div class="h-6 bg-outline-variant/30 rounded w-2/3 mb-sm"></div>
+<div class="h-4 bg-outline-variant/30 rounded w-full mb-xs"></div>
+<div class="h-4 bg-outline-variant/30 rounded w-5/6 mb-md"></div>
+<div class="flex justify-between items-center mt-auto">
+<div class="w-20 h-8 bg-outline-variant/30 rounded-full"></div>
+<div class="w-24 h-4 bg-outline-variant/30 rounded"></div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-primary dark:bg-primary-container text-on-primary dark:text-on-primary-container mt-auto">
+<div class="w-full py-xl px-gutter flex flex-col md:flex-row justify-between items-start max-w-container-max mx-auto gap-xl">
+<div class="max-w-sm">
+<span class="font-h3 text-h3 font-bold block mb-base">JECRC Club Hub</span>
+<p class="font-body-md text-on-primary/70 mb-md">Empowering student excellence through collaborative extracurricular engagement and leadership opportunities.</p>
+<p class="font-label text-label">© 2024 JECRC University Club Hub. Empowering Student Excellence.</p>
+</div>
+<div class="grid grid-cols-2 gap-xl">
+<div class="flex flex-col gap-sm">
+<span class="font-bold font-label uppercase tracking-widest text-[12px] opacity-60">Portal</span>
+<a class="text-on-primary/80 hover:text-secondary-fixed transition-all" href="#">Privacy Policy</a>
+<a class="text-on-primary/80 hover:text-secondary-fixed transition-all" href="#">Terms of Service</a>
+</div>
+<div class="flex flex-col gap-sm">
+<span class="font-bold font-label uppercase tracking-widest text-[12px] opacity-60">Support</span>
+<a class="text-on-primary/80 hover:text-secondary-fixed transition-all" href="#">Faculty Portal</a>
+<a class="text-on-primary/80 hover:text-secondary-fixed transition-all" href="#">Contact Support</a>
+</div>
+</div>
+<div class="flex flex-col gap-sm">
+<span class="font-bold font-label uppercase tracking-widest text-[12px] opacity-60">Connect</span>
+<div class="flex gap-md">
+<span class="material-symbols-outlined cursor-pointer hover:text-secondary-fixed">social_leaderboard</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-secondary-fixed">alternate_email</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-secondary-fixed">share</span>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,7 @@
+{
+  "python.analysis.extraPaths": [
+    "./backend"
+  ],
+  "python.analysis.autoImportCompletions": true,
+  "css.lint.unknownAtRules": "ignore"
+}

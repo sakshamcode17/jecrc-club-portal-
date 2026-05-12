@@ -20,6 +20,7 @@ const Login = () => {
     setLoading(true);
 
     try {
+      console.log('Attempting login for:', email);
       // Backend expects OAuth2 form data (username/password)
       const formData = new URLSearchParams();
       formData.append('username', email);
@@ -29,6 +30,7 @@ const Login = () => {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
 
+      console.log('Token received successfully');
       const { access_token } = tokenRes.data;
 
       // Fetch the user profile with the real token
@@ -36,10 +38,13 @@ const Login = () => {
         headers: { Authorization: `Bearer ${access_token}` },
       });
 
+      console.log('User profile fetched:', userRes.data.email);
       login(userRes.data, access_token);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Login failed. Please check your credentials.');
+      console.error('Login error:', err);
+      const errorMessage = err.response?.data?.detail || 'Login failed. Please check your credentials and ensure the backend is running.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -50,7 +55,7 @@ const Login = () => {
       <main 
         className="flex-grow flex items-center justify-center px-6 py-20 relative overflow-hidden"
         style={{ 
-          backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://lh3.googleusercontent.com/aida/ADBb0uggGp6XSlEZ0JHlPOxlK0rZ9j4WF8Jhu5H2xv6lG_gUgGwHDT9yCKfD0rW88pta7k8GlbmB06HH8UppBqq7J_jsyMbLQmra_lT44HxZrkJ43XIsV7BFhmbLUmIBffRKp1uLSEFV9LbfKjLTP_8JRTAj_DtWBkZHVQrjerkw82J7xBzsDAy_-5QJ6O7UDyJd_YrkcJu5E2krpJtyTwGvFDcXBXVssHPqMRKmrWEHomuxT85VVCnwV_FkFjD22wUCd3kicbQRgbkdvPI')",
+          backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('/jecrc_bg.png')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed'

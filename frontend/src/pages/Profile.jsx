@@ -56,8 +56,8 @@ const Profile = () => {
   };
 
   const joinedClubs = [
-    { name: "JU Makerspace", role: "Core Tech Member", icon: "ðŸ› ï¸" },
-    { name: "JU Aashayein", role: "Active Participant", icon: "â¤ï¸" },
+    { name: "JU Makerspace", role: "Core Tech Member", icon: "/logos/Makerspace_logo.png" },
+    { name: "JU Aashayein", role: "Active Participant", icon: "/logos/Aashayein_logo.png" },
   ];
 
   return (
@@ -84,7 +84,7 @@ const Profile = () => {
                   Verified Student
                 </span>
                 <span className="px-4 py-2 bg-secondary/10 text-secondary font-bold text-xs rounded-full border border-secondary/20">
-                  {user?.year || '2nd Year'} â€¢ {user?.semester || '4th Semester'}
+                  {user?.year || '2nd Year'} • {user?.semester || '4th Semester'}
                 </span>
               </div>
             </div>
@@ -158,8 +158,8 @@ const Profile = () => {
                     className="group bg-white p-6 rounded-2xl shadow-lg border border-transparent hover:border-secondary transition-all"
                   >
                     <div className="flex items-center gap-5">
-                      <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-3xl group-hover:bg-secondary/10 transition-colors">
-                        {club.icon}
+                      <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center p-2 group-hover:bg-secondary/10 transition-colors overflow-hidden">
+                        <img src={club.icon} alt={club.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300" />
                       </div>
                       <div>
                         <h4 className="text-lg font-bold text-primary group-hover:text-secondary transition-colors">{club.name}</h4>

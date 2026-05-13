@@ -51,6 +51,7 @@ class Club(Base):
     members = relationship("User", secondary=club_members, back_populates="clubs")
     projects = relationship("Project", back_populates="club")
     applications = relationship("Application", back_populates="club")
+    events = relationship("Event", back_populates="club")
 
 class Project(Base):
     __tablename__ = "projects"
@@ -63,6 +64,25 @@ class Project(Base):
     
     # Relationships
     club = relationship("Club", back_populates="projects")
+
+class Event(Base):
+    __tablename__ = "events"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    description = Column(Text)
+    category = Column(String) # Technical, Cultural, etc.
+    banner = Column(String)  # Banner URL
+    date = Column(DateTime, nullable=False)
+    location = Column(String)
+    organizer_club_id = Column(Integer, ForeignKey("clubs.id"))
+    registration_link = Column(String)  # Google Form or external registration URL
+    registration_deadline = Column(DateTime)
+    status = Column(String, default="Upcoming") # Upcoming, Ongoing, Past
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    club = relationship("Club", back_populates="events")
 
 class Application(Base):
     __tablename__ = "applications"

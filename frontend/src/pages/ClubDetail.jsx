@@ -1,15 +1,29 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Mail, Send, Cpu, Brain, Sparkles, Trophy, Target, Award, User as UserIcon } from 'lucide-react';
+import { ArrowLeft, Mail, Send, Cpu, Brain, Sparkles, Trophy, Target, Award, User as UserIcon, MapPin } from 'lucide-react';
 import { Link, useParams, Navigate, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { clubs } from '../utils/clubData';
+import axios from 'axios';
 
 const ClubDetail = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const club = clubs.find(c => c.slug === slug);
+  const [clubEvents, setClubEvents] = React.useState([]);
+
+  React.useEffect(() => {
+    const fetchClubEvents = async () => {
+      try {
+        const res = await axios.get('http://localhost:8000/api/events/');
+        setClubEvents(res.data.filter(e => e.club_name === club?.name));
+      } catch (err) {
+        console.error("Failed to fetch club events:", err);
+      }
+    };
+    if (club) fetchClubEvents();
+  }, [club]);
 
   if (!club) return <Navigate to="/dashboard" />;
 
@@ -123,6 +137,28 @@ const ClubDetail = () => {
                 ))}
               </div>
             </section>
+
+            {/* Club Events Section */}
+            {clubEvents.length > 0 && (
+              <section>
+                <h2 className="text-3xl font-bold text-primary mb-8">Upcoming Club Events</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {clubEvents.map(event => (
+                    <Link to="/events" key={event.id} className="bg-white p-6 rounded-3xl shadow-lg border border-transparent hover:border-secondary transition-all flex flex-col group">
+                       <div className="flex items-center justify-between mb-4">
+                        <span className="text-[10px] font-black text-secondary uppercase tracking-widest">{new Date(event.date).toLocaleDateString('en-US', {month: 'long', day: 'numeric'})}</span>
+                        <span className={`px-2 py-0.5 text-[8px] font-black uppercase rounded-full border ${event.status === 'Upcoming' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>{event.status}</span>
+                       </div>
+                       <h4 className="text-lg font-bold text-primary group-hover:text-secondary transition-colors mb-2">{event.title}</h4>
+                       <p className="text-xs text-slate-400 line-clamp-2 mb-4">{event.description}</p>
+                       <div className="mt-auto flex items-center gap-2 text-primary font-bold text-[10px]">
+                        <MapPin size={12} /> {event.location}
+                       </div>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
 
           {/* Sidebar Column */}

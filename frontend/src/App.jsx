@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Events from './pages/Events';
 import ClubDetail from './pages/ClubDetail';
 import ClubApplication from './pages/ClubApplication';
 import Profile from './pages/Profile';
@@ -21,6 +22,7 @@ const App = () => {
         {/* Public */}
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/events" element={<Events />} />
 
         {/* Student Protected */}
         <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} />

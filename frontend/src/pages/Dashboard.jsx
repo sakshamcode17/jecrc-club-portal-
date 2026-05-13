@@ -5,11 +5,25 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { clubs } from '../utils/clubData';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import useUIStore from '../store/uiStore';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { searchQuery, selectedCategory, setSelectedCategory } = useUIStore();
+  const [upcomingEvents, setUpcomingEvents] = React.useState([]);
+
+  React.useEffect(() => {
+    const fetchUpcoming = async () => {
+      try {
+        const res = await axios.get('http://localhost:8000/api/events/?status_filter=upcoming');
+        setUpcomingEvents(res.data.slice(0, 3));
+      } catch (err) {
+        console.error("Failed to fetch upcoming events:", err);
+      }
+    };
+    fetchUpcoming();
+  }, []);
 
   const filteredClubs = clubs.filter(club => {
     const matchesSearch = club.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -63,6 +77,35 @@ const Dashboard = () => {
           </motion.div>
         </div>
       </section>
+
+      {/* Upcoming Events Ribbon */}
+      {upcomingEvents.length > 0 && (
+        <div className="bg-white border-b border-slate-100 py-6 overflow-hidden">
+          <div className="max-w-[1280px] mx-auto px-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-black text-primary flex items-center gap-2">
+                <span className="w-2 h-2 bg-secondary rounded-full animate-pulse"></span>
+                Upcoming Events
+              </h2>
+              <Link to="/events" className="text-xs font-bold text-primary hover:text-secondary uppercase tracking-widest transition-all">View All</Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {upcomingEvents.map(event => (
+                <Link to="/events" key={event.id} className="group bg-slate-50 p-4 rounded-2xl border border-transparent hover:border-secondary transition-all flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white rounded-xl flex flex-col items-center justify-center border border-slate-100 flex-shrink-0">
+                    <span className="text-[10px] font-black text-primary uppercase">{new Date(event.date).toLocaleDateString('en-US', {month: 'short'})}</span>
+                    <span className="text-lg font-black text-secondary leading-none">{new Date(event.date).getDate()}</span>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-slate-900 truncate group-hover:text-primary">{event.title}</p>
+                    <p className="text-[10px] text-slate-400 font-semibold">{event.club_name} • {event.location}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="flex-grow max-w-[1280px] mx-auto w-full px-6 py-16">

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ShieldCheck, LogOut, Users, Clock, CheckCircle2, XCircle, ChevronDown,
@@ -21,7 +21,7 @@ const STATUSES = Object.keys(STATUS_CONFIG);
 
 /* ── helpers ── */
 const api = (adminToken) => axios.create({
-  baseURL:"http://localhost:8000/api/admin",
+  baseURL:"http://localhost:8000/api/admin/",
   headers:{ Authorization:`Bearer ${adminToken}` }
 });
 
@@ -45,7 +45,7 @@ const ApplicationsTab = ({ adminToken }) => {
   const fetchData = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const [a, c] = await Promise.all([client.get("/applications"), client.get("/clubs")]);
+      const [a, c] = await Promise.all([client.get("applications"), client.get("clubs")]);
       setApplications(a.data); setClubs(c.data);
     } catch { setError("Failed to load applications."); }
     finally { setLoading(false); }
@@ -56,7 +56,7 @@ const ApplicationsTab = ({ adminToken }) => {
   const updateStatus = async (id, status) => {
     setUpdatingId(id);
     try {
-      const r = await client.put(`/applications/${id}/status`, { status });
+      const r = await client.put(`applications/${id}/status`, { status });
       setApplications(p => p.map(a => a.id === id ? { ...a, ...r.data } : a));
       if (selectedApp?.id === id) setSelectedApp(p => ({ ...p, ...r.data }));
     } catch { alert("Failed to update status."); }
@@ -248,32 +248,73 @@ const EventsTab = ({ adminToken }) => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ title:"", description:"", location:"", category:"", status:"Upcoming", event_date:"", registration_deadline:"", organizer_club_id:"", max_participants:"" });
+  const [form, setForm] = useState({ title:"", description:"", location:"", category:"", status:"Upcoming", date:"", registration_deadline:"", organizer_club_id:"", banner:"", registration_link:"" });
   const client = api(adminToken);
+  const evClient = axios.create({ 
+    baseURL: "http://localhost:8000/api/events", 
+    headers: { Authorization: `Bearer ${adminToken}` } 
+  });
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [ev,cl] = await Promise.all([client.get("/events"), client.get("/clubs")]);
+      const [ev,cl] = await Promise.all([evClient.get("/"), client.get("clubs")]);
       setEvents(ev.data); setClubs(cl.data);
     } catch { } finally { setLoading(false); }
   }, [adminToken]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const openCreate = () => { setEditing(null); setForm({ title:"",description:"",location:"",category:"",status:"Upcoming",event_date:"",registration_deadline:"",organizer_club_id:"",max_participants:"" }); setShowForm(true); };
-  const openEdit = (ev) => { setEditing(ev); setForm({ title:ev.title||"",description:ev.description||"",location:ev.location||"",category:ev.category||"",status:ev.status||"Upcoming",event_date:ev.event_date?ev.event_date.slice(0,16):"",registration_deadline:ev.registration_deadline?ev.registration_deadline.slice(0,16):"",organizer_club_id:ev.organizer_club?.id||"",max_participants:ev.max_participants||"" }); setShowForm(true); };
+  const openCreate = () => { setEditing(null); setForm({ title:"",description:"",location:"",category:"",status:"Upcoming",date:"",registration_deadline:"",organizer_club_id:"",banner:"",registration_link:"" }); setShowForm(true); };
+  const openEdit = (ev) => { setEditing(ev); setForm({ title:ev.title||"",description:ev.description||"",location:ev.location||"",category:ev.category||"",status:ev.status||"Upcoming",date:ev.date?ev.date.slice(0,16):"",registration_deadline:ev.registration_deadline?ev.registration_deadline.slice(0,16):"",organizer_club_id:ev.organizer_club_id||"",banner:ev.banner||"",registration_link:ev.registration_link||"" }); setShowForm(true); };
 
-  const save = async () => {
-    const payload = { ...form, organizer_club_id: form.organizer_club_id||null, max_participants: form.max_participants?parseInt(form.max_participants):null };
+  const handleBannerUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("file", file);
     try {
-      if (editing) { await client.put(`/events/${editing.id}`, payload); }
-      else { await client.post("/events", payload); }
-      setShowForm(false); fetchData();
-    } catch { alert("Failed to save event."); }
+      const r = await evClient.post("/upload-banner", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      console.log("Banner uploaded:", r.data.banner_url);
+      setForm(p => ({ ...p, banner: r.data.banner_url }));
+    } catch (err) { 
+      console.error("Banner upload failed:", err);
+      const detail = err.response?.data?.detail;
+      const msg = typeof detail === "string" ? detail : "Check file type (jpg/png/webp) and size (<= 5MB).";
+      alert(`Failed to upload banner: ${msg}`); 
+    }
   };
 
-  const remove = async (id) => { if (!confirm("Delete this event?")) return; await client.delete(`/events/${id}`); fetchData(); };
+  const save = async () => {
+    // Clean payload: empty strings to null for optional fields
+    const payload = { 
+      ...form, 
+      organizer_club_id: form.organizer_club_id ? parseInt(form.organizer_club_id) : null,
+      date: form.date || null,
+      registration_deadline: form.registration_deadline || null,
+      registration_link: form.registration_link?.trim() || null
+    };
+
+    if (!payload.title || !payload.date) {
+      alert("Title and Event Date are required.");
+      return;
+    }
+
+    try {
+      if (editing) { await evClient.put(`/${editing.id}`, payload); }
+      else { await evClient.post("/", payload); }
+      setShowForm(false); fetchData();
+    } catch (err) { 
+        console.error("Save event failed:", err.response?.data || err.message);
+        const detail = err.response?.data?.detail;
+        const msg = typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail[0]?.msg : "Check console for details");
+        alert(`Failed to save event: ${msg}`); 
+    }
+  };
+
+  const remove = async (id) => { if (!confirm("Delete this event?")) return; await evClient.delete(`/${id}`); fetchData(); };
 
   return (
     <div className="space-y-6">
@@ -299,8 +340,8 @@ const EventsTab = ({ adminToken }) => {
                 </div>
                 <div className="flex flex-wrap gap-4 text-xs text-slate-500">
                   {ev.location && <span className="flex items-center gap-1"><Building2 size={11}/>{ev.location}</span>}
-                  {ev.event_date && <span className="flex items-center gap-1"><Calendar size={11}/>{fmtDate(ev.event_date)}</span>}
-                  {ev.organizer_club && <span className="flex items-center gap-1"><Users size={11}/>{ev.organizer_club.name}</span>}
+                  {ev.date && <span className="flex items-center gap-1"><Calendar size={11}/>{fmtDate(ev.date)}</span>}
+                  {ev.club_name && <span className="flex items-center gap-1"><Users size={11}/>{ev.club_name}</span>}
                 </div>
               </div>
               <div className="flex gap-2">
@@ -329,8 +370,7 @@ const EventsTab = ({ adminToken }) => {
                   {label:"Title",key:"title",type:"text"},
                   {label:"Location",key:"location",type:"text"},
                   {label:"Category",key:"category",type:"text"},
-                  {label:"Max Participants",key:"max_participants",type:"number"},
-                  {label:"Event Date",key:"event_date",type:"datetime-local"},
+                  {label:"Event Date",key:"date",type:"datetime-local"},
                   {label:"Registration Deadline",key:"registration_deadline",type:"datetime-local"},
                 ].map(({label,key,type})=>(
                   <div key={key}>
@@ -351,6 +391,23 @@ const EventsTab = ({ adminToken }) => {
                     <option value="">None</option>
                     {clubs.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Google Form Link</label>
+                  <input
+                    type="url"
+                    placeholder="https://forms.gle/..."
+                    value={form.registration_link}
+                    onChange={e=>setForm(p=>({...p,registration_link:e.target.value}))}
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Banner Image</label>
+                  <div className="flex items-center gap-4">
+                    {form.banner && <img src={form.banner.startsWith('http') ? form.banner : `http://localhost:8000${form.banner}`} className="w-16 h-16 rounded-xl object-cover border border-slate-200" alt="Banner" />}
+                    <input type="file" onChange={handleBannerUpload} className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"/>
+                  </div>
                 </div>
                 <div>
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Description</label>
@@ -508,12 +565,12 @@ const StudentsTab = ({ adminToken }) => {
 
   const save = async () => {
     try {
-      if (editing) { const {email,password,...rest}=form; await client.put(`/students/${editing.id}`, rest); }
-      else { await client.post("/students", form); }
+      if (editing) { const {email,password,...rest}=form; await client.put(`students/${editing.id}`, rest); }
+      else { await client.post("students", form); }
       setShowForm(false); fetchData();
     } catch (e) { alert(e.response?.data?.detail||"Failed to save."); }
   };
-  const remove = async (id) => { if (!confirm("Delete student?")) return; await client.delete(`/students/${id}`); fetchData(); };
+  const remove = async (id) => { if (!confirm("Delete student?")) return; await client.delete(`students/${id}`); fetchData(); };
 
   return (
     <div className="space-y-6">
@@ -621,7 +678,7 @@ const ClubsTab = ({ adminToken }) => {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    try { const r = await client.get("/clubs"); setClubs(r.data); }
+    try { const r = await client.get("clubs"); setClubs(r.data); }
     catch { } finally { setLoading(false); }
   }, [adminToken]);
 
@@ -633,15 +690,15 @@ const ClubsTab = ({ adminToken }) => {
 
   const save = async () => {
     try {
-      if (editing) await client.put(`/clubs/${editing.id}`, form);
-      else await client.post("/clubs", form);
+      if (editing) await client.put(`clubs/${editing.id}`, form);
+      else await client.post("clubs", form);
       setShowForm(false); fetchData();
     } catch(e) { alert(e.response?.data?.detail||"Failed to save."); }
   };
-  const remove = async (id) => { if (!confirm("Delete club?")) return; await client.delete(`/clubs/${id}`); fetchData(); };
+  const remove = async (id) => { if (!confirm("Delete club?")) return; await client.delete(`clubs/${id}`); fetchData(); };
   const saveRec = async () => {
     try {
-      await client.put(`/recruitment/${recClub.id}`, recForm);
+      await client.put(`recruitment/${recClub.id}`, recForm);
       setRecClub(null); fetchData();
     } catch { alert("Failed to save recruitment."); }
   };

@@ -9,6 +9,7 @@ from app.api.clubs import router as clubs_router
 from app.api.users import router as users_router
 from app.api.applications import router as applications_router
 from app.api.admin import router as admin_router
+from app.api.events import router as events_router
 
 app = FastAPI(
     title="JECRC Club Hub API",
@@ -37,6 +38,7 @@ app.include_router(clubs_router, prefix="/api/clubs", tags=["Clubs"])
 app.include_router(users_router, prefix="/api/users", tags=["Users"])
 app.include_router(applications_router, prefix="/api/applications", tags=["Applications"])
 app.include_router(admin_router, prefix="/api/admin", tags=["Admin"])
+app.include_router(events_router, prefix="/api/events", tags=["Events"])
 
 @app.get("/")
 async def root():

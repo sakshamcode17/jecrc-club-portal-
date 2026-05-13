@@ -86,6 +86,48 @@ async def seed():
             for p_data in projects_data:
                 project = Project(**p_data, club_id=club.id)
                 session.add(project)
+
+        # Add sample events
+        from datetime import datetime, timedelta
+        now = datetime.utcnow()
+        
+        events_data = [
+            {
+                "title": "Tech-Nexus Hackathon",
+                "description": "A 24-hour hackathon for building innovative solutions for campus life.",
+                "date": now + timedelta(days=5),
+                "location": "Auditorium, Block A",
+                "organizer_club_id": 1, # Makerspace
+                "registration_deadline": now + timedelta(days=2),
+                "status": "Upcoming",
+                "banner": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+            },
+            {
+                "title": "Blood Donation Drive 2024",
+                "description": "Save a life today! Annual blood donation camp organized in collaboration with Red Cross.",
+                "date": now - timedelta(days=1), # Ongoing
+                "location": "Health Center",
+                "organizer_club_id": 2, # Aashayein
+                "registration_deadline": now - timedelta(days=2),
+                "status": "Ongoing",
+                "banner": "https://images.unsplash.com/photo-1536859355448-76f92eb7a3de?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+            },
+            {
+                "title": "Cultural Night 2023",
+                "description": "A grand celebration of music, dance, and drama.",
+                "date": now - timedelta(days=30), # Past
+                "location": "Main Stage",
+                "organizer_club_id": 4, # Abhivyakti
+                "registration_deadline": now - timedelta(days=35),
+                "status": "Past",
+                "banner": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+            }
+        ]
+        
+        from app.models.models import Event
+        for e_data in events_data:
+            event = Event(**e_data)
+            session.add(event)
         
         await session.commit()
     print("Database seeded successfully!")

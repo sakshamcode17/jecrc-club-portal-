@@ -1,1 +1,1 @@
-from . import user, club, application
+from . import user, club, application, directory

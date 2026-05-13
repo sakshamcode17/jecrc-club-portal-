@@ -1,6 +1,7 @@
 import asyncio
+from sqlalchemy import select
 from app.db.session import async_session, engine
-from app.models.models import Base, Club, Project
+from app.models.models import Base, Club, Project, Directory
 
 CLUBS_DATA = [
     {
@@ -70,6 +71,33 @@ CLUBS_DATA = [
     }
 ]
 
+DIRECTORY_DATA = [
+    {
+        "name": "Dr. A. K. Sharma",
+        "designation": "Dean Student Welfare",
+        "role": "Authority",
+        "phone": "+91-9876543210",
+        "email": "dean.sw@jecrc.ac.in",
+        "club_slug": None,
+    },
+    {
+        "name": "Riya Jain",
+        "designation": "Club President",
+        "role": "Club Contact",
+        "phone": "+91-9123456780",
+        "email": "riya.jain@jecrc.edu.in",
+        "club_slug": "ju-makerspace",
+    },
+    {
+        "name": "Harsh Vardhan",
+        "designation": "Core Coordinator",
+        "role": "Club Contact",
+        "phone": "+91-9988776655",
+        "email": "harsh.vardhan@jecrc.edu.in",
+        "club_slug": "ju-aashayein",
+    },
+]
+
 async def seed():
     async with engine.begin() as conn:
         # Create tables
@@ -86,6 +114,17 @@ async def seed():
             for p_data in projects_data:
                 project = Project(**p_data, club_id=club.id)
                 session.add(project)
+
+        for raw_entry_data in DIRECTORY_DATA:
+            entry_data = dict(raw_entry_data)
+            club_slug = entry_data.pop("club_slug", None)
+            club_id = None
+            if club_slug:
+                club_result = await session.execute(select(Club).where(Club.slug == club_slug))
+                club = club_result.scalars().first()
+                club_id = club.id if club else None
+            directory_entry = Directory(**entry_data, club_id=club_id)
+            session.add(directory_entry)
 
         # Add sample events
         from datetime import datetime, timedelta

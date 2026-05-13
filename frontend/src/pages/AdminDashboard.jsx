@@ -443,9 +443,27 @@ const DirectoryTab = ({ adminToken }) => {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [d,c] = await Promise.all([client.get("/directory"), client.get("/clubs")]);
-      setEntries(d.data); setClubs(c.data);
-    } catch { } finally { setLoading(false); }
+      const [directoryResult, clubsResult] = await Promise.allSettled([
+        client.get("/directory"),
+        client.get("/clubs"),
+      ]);
+
+      if (directoryResult.status === "fulfilled") {
+        setEntries(directoryResult.value.data);
+      } else {
+        setEntries([]);
+        console.error("Failed to load directory entries:", directoryResult.reason);
+      }
+
+      if (clubsResult.status === "fulfilled") {
+        setClubs(clubsResult.value.data);
+      } else {
+        setClubs([]);
+        console.error("Failed to load clubs for directory form:", clubsResult.reason);
+      }
+    } catch (err) {
+      console.error("Unexpected directory data fetch error:", err);
+    } finally { setLoading(false); }
   }, [adminToken]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
@@ -485,6 +503,7 @@ const DirectoryTab = ({ adminToken }) => {
               <div className="flex-grow min-w-0">
                 <p className="font-bold text-primary truncate">{entry.name}</p>
                 <p className="text-xs text-slate-500 truncate">{entry.designation}</p>
+                {entry.role && <p className="text-xs text-slate-500 truncate">Role: {entry.role}</p>}
                 {entry.club && <p className="text-xs text-secondary font-semibold mt-1 truncate">{entry.club.name}</p>}
                 {entry.phone && <p className="text-xs text-slate-400 flex items-center gap-1 mt-1"><Phone size={10}/>{entry.phone}</p>}
                 {entry.email && <p className="text-xs text-slate-400 flex items-center gap-1 truncate"><Mail size={10}/>{entry.email}</p>}

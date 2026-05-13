@@ -7,6 +7,7 @@ import Events from './pages/Events';
 import ClubDetail from './pages/ClubDetail';
 import ClubApplication from './pages/ClubApplication';
 import Profile from './pages/Profile';
+import Directory from './pages/Directory';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import useAuthStore from './store/authStore';
@@ -23,6 +24,7 @@ const App = () => {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/events" element={<Events />} />
+        <Route path="/directory" element={isAuthenticated ? <Directory /> : <Navigate to="/login" />} />
 
         {/* Student Protected */}
         <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} />

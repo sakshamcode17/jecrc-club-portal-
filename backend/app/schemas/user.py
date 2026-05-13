@@ -19,6 +19,8 @@ class UserInDBBase(UserBase):
     id: int
     is_active: bool
     is_admin: bool
+    active_clubs_count: int = 0
+    events_attended_count: int = 0
 
     class Config:
         from_attributes = True

@@ -39,8 +39,8 @@ const Profile = () => {
   }, [token]);
 
   const stats = [
-    { label: "Clubs Active", value: "02", icon: <TrendingUp className="text-secondary" /> },
-    { label: "Events Attended", value: "08", icon: <Calendar className="text-secondary" /> },
+    { label: "Clubs Active", value: String(user?.active_clubs_count || 0).padStart(2, '0'), icon: <TrendingUp className="text-secondary" /> },
+    { label: "Events Attended", value: String(user?.events_attended_count || 0).padStart(2, '0'), icon: <Calendar className="text-secondary" /> },
   ];
 
   const getStatusColor = (status) => {
@@ -55,10 +55,8 @@ const Profile = () => {
     return colors[status] || 'bg-slate-100 text-slate-700 border-slate-200';
   };
 
-  const joinedClubs = [
-    { name: "JU Makerspace", role: "Core Tech Member", icon: "/logos/Makerspace_logo.png" },
-    { name: "JU Aashayein", role: "Active Participant", icon: "/logos/Aashayein_logo.png" },
-  ];
+  // Derived state: clubs where the user has an accepted application
+  const acceptedApplications = applications.filter(app => app.status === 'Accepted');
 
   return (
     <div className="bg-slate-50 min-h-screen flex flex-col font-sora">
@@ -148,26 +146,34 @@ const Profile = () => {
                 <Link to="/dashboard" className="text-secondary font-bold text-sm hover:underline">Explore More</Link>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {joinedClubs.map((club, index) => (
-                  <motion.div 
-                    key={club.name}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    whileHover={{ y: -5 }}
-                    className="group bg-white p-6 rounded-2xl shadow-lg border border-transparent hover:border-secondary transition-all"
-                  >
-                    <div className="flex items-center gap-5">
-                      <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center p-2 group-hover:bg-secondary/10 transition-colors overflow-hidden">
-                        <img src={club.icon} alt={club.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300" />
+                {acceptedApplications.length > 0 ? (
+                  acceptedApplications.map((app, index) => (
+                    <motion.div 
+                      key={app.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      whileHover={{ y: -5 }}
+                      className="group bg-white p-6 rounded-2xl shadow-lg border border-transparent hover:border-secondary transition-all"
+                    >
+                      <div className="flex items-center gap-5">
+                        <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center p-2 group-hover:bg-secondary/10 transition-colors overflow-hidden">
+                          <img src={app.club?.logo_url || `/logos/${app.club?.name}_logo.png`} alt={app.club?.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300" />
+                        </div>
+                        <div>
+                          <h4 className="text-lg font-bold text-primary group-hover:text-secondary transition-colors">{app.club?.name}</h4>
+                          <p className="text-sm font-semibold text-gray-400">{app.position}</p>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="text-lg font-bold text-primary group-hover:text-secondary transition-colors">{club.name}</h4>
-                        <p className="text-sm font-semibold text-gray-400">{club.role}</p>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="col-span-full bg-white p-10 rounded-2xl border-2 border-dashed border-slate-100 flex flex-col items-center justify-center text-center">
+                    <Info className="text-slate-200 mb-3" size={32} />
+                    <p className="text-slate-400 font-bold">No Active Club Membership</p>
+                    <p className="text-xs text-slate-400 mt-1">Join a club to see your memberships here.</p>
+                  </div>
+                )}
               </div>
             </div>
 

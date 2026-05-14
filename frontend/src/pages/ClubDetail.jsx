@@ -4,26 +4,44 @@ import { ArrowLeft, Mail, Send, Cpu, Brain, Sparkles, Trophy, Target, Award, Use
 import { Link, useParams, Navigate, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { clubs } from '../utils/clubData';
 import axios from 'axios';
 
 const ClubDetail = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const club = clubs.find(c => c.slug === slug);
+  const [club, setClub] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
   const [clubEvents, setClubEvents] = React.useState([]);
 
   React.useEffect(() => {
-    const fetchClubEvents = async () => {
+    const fetchClubData = async () => {
       try {
-        const res = await axios.get('http://localhost:8000/api/events/');
-        setClubEvents(res.data.filter(e => e.club_name === club?.name));
+        const [clubRes, eventsRes] = await Promise.all([
+          axios.get(`http://localhost:8000/api/clubs/${slug}`),
+          axios.get('http://localhost:8000/api/events/'),
+        ]);
+        setClub(clubRes.data);
+        setClubEvents(eventsRes.data.filter((event) => event.club_name === clubRes.data.name));
       } catch (err) {
-        console.error("Failed to fetch club events:", err);
+        console.error('Failed to fetch club details:', err);
+        setClub(null);
+      } finally {
+        setLoading(false);
       }
     };
-    if (club) fetchClubEvents();
-  }, [club]);
+
+    if (slug) {
+      fetchClubData();
+    }
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="bg-slate-50 min-h-screen flex items-center justify-center font-sora text-primary">
+        Loading club profile...
+      </div>
+    );
+  }
 
   if (!club) return <Navigate to="/dashboard" />;
 
@@ -60,7 +78,7 @@ const ClubDetail = () => {
           <img 
             alt={club.name} 
             className="w-full h-full object-cover" 
-            src={club.image} 
+            src={club.banner_url || club.logo_url || '/logo.png'}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/40 to-transparent flex flex-col justify-end p-12">
             <motion.div 
@@ -190,10 +208,11 @@ const ClubDetail = () => {
               <motion.button 
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                disabled={!club.is_accepting}
                 onClick={() => navigate(`/apply/${club.slug}`)}
-                className="w-full bg-secondary text-primary font-bold py-4 rounded-2xl hover:bg-white transition-all uppercase tracking-widest text-xs shadow-xl"
+                className={`w-full font-bold py-4 rounded-2xl transition-all uppercase tracking-widest text-xs shadow-xl ${club.is_accepting ? 'bg-secondary text-primary hover:bg-white' : 'bg-slate-400 text-white cursor-not-allowed'}`}
               >
-                Apply Now
+                {club.is_accepting ? 'Apply Now' : 'Recruitment Closed'}
               </motion.button>
             </motion.section>
 

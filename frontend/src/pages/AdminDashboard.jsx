@@ -690,9 +690,17 @@ const ClubsTab = ({ adminToken }) => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name:"", slug:"", category:"", tagline:"", description:"", logo_url:"", is_accepting:true });
-  const [recForm, setRecForm] = useState({ recruitment_open:false, start_date:"", end_date:"" });
-  const [recClub, setRecClub] = useState(null);
+  const [form, setForm] = useState({
+    name: "",
+    slug: "",
+    category: "",
+    tagline: "",
+    description: "",
+    logo_url: "",
+    is_accepting: true,
+    projects: [{ title: "", date: "", description: "" }],
+    leadership: [{ name: "", role: "", email: "" }],
+  });
   const client = api(adminToken);
 
   const fetchData = useCallback(async () => {
@@ -703,22 +711,54 @@ const ClubsTab = ({ adminToken }) => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const openEdit = (c) => { setEditing(c); setForm({name:c.name,slug:c.slug,category:c.category||"",tagline:c.tagline||"",description:c.description||"",logo_url:c.logo_url||"",is_accepting:c.is_accepting}); setShowForm(true); };
-  const openCreate = () => { setEditing(null); setForm({name:"",slug:"",category:"",tagline:"",description:"",logo_url:"",is_accepting:true}); setShowForm(true); };
-  const openRec = (c) => { setRecClub(c); setRecForm({recruitment_open:c.recruitment_open||false,start_date:c.recruitment_start?c.recruitment_start.slice(0,16):"",end_date:c.recruitment_end?c.recruitment_end.slice(0,16):""}); };
+  const openEdit = (c) => {
+    setEditing(c);
+    setForm({
+      name: c.name || "",
+      slug: c.slug || "",
+      category: c.category || "",
+      tagline: c.tagline || "",
+      description: c.description || "",
+      logo_url: c.logo_url || "",
+      is_accepting: c.is_accepting ?? true,
+      projects: c.projects?.length ? c.projects.map((p) => ({ title: p.title || "", date: p.date || "", description: p.description || "" })) : [{ title: "", date: "", description: "" }],
+      leadership: c.leadership?.length ? c.leadership.map((l) => ({ name: l.name || "", role: l.role || "", email: l.email || "" })) : [{ name: "", role: "", email: "" }],
+    });
+    setShowForm(true);
+  };
+  const openCreate = () => {
+    setEditing(null);
+    setForm({
+      name: "",
+      slug: "",
+      category: "",
+      tagline: "",
+      description: "",
+      logo_url: "",
+      is_accepting: true,
+      projects: [{ title: "", date: "", description: "" }],
+      leadership: [{ name: "", role: "", email: "" }],
+    });
+    setShowForm(true);
+  };
 
   const save = async () => {
     try {
-      if (editing) await client.put(`clubs/${editing.id}`, form);
-      else await client.post("clubs", form);
+      const payload = {
+        ...form,
+        projects: form.projects.filter((p) => p.title.trim()),
+        leadership: form.leadership.filter((l) => l.name.trim() && l.role.trim()),
+      };
+      if (editing) await client.put(`clubs/${editing.id}`, payload);
+      else await client.post("clubs", payload);
       setShowForm(false); fetchData();
     } catch(e) { alert(e.response?.data?.detail||"Failed to save."); }
   };
   const remove = async (id) => { if (!confirm("Delete club?")) return; await client.delete(`clubs/${id}`); fetchData(); };
-  const saveRec = async () => {
+  const toggleRecruitment = async (club) => {
     try {
-      await client.put(`recruitment/${recClub.id}`, recForm);
-      setRecClub(null); fetchData();
+      await client.put(`clubs/${club.id}/recruitment`, { is_accepting: !club.is_accepting });
+      fetchData();
     } catch { alert("Failed to save recruitment."); }
   };
 
@@ -743,12 +783,14 @@ const ClubsTab = ({ adminToken }) => {
                   <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full border ${c.is_accepting?"bg-emerald-100 text-emerald-700 border-emerald-200":"bg-red-100 text-red-700 border-red-200"}`}>
                     {c.is_accepting?"Open":"Closed"}
                   </span>
-                  {c.recruitment_open && <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full border border-amber-200">Recruiting</span>}
                 </div>
                 <p className="text-xs text-slate-400 mt-1 line-clamp-1">{c.tagline||c.description||"No description"}</p>
+                <p className="text-[10px] text-slate-400 mt-1">{c.projects?.length || 0} initiatives • {c.leadership?.length || 0} leaders</p>
               </div>
               <div className="flex gap-2">
-                <button onClick={()=>openRec(c)} className="px-3 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-bold border border-amber-200">Recruitment</button>
+                <button onClick={()=>toggleRecruitment(c)} className={`px-3 py-1.5 rounded-xl text-xs font-bold border ${c.is_accepting ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100" : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"}`}>
+                  {c.is_accepting ? "Close Hiring" : "Open Hiring"}
+                </button>
                 <button onClick={()=>openEdit(c)} className="p-2 text-slate-400 hover:text-primary hover:bg-slate-100 rounded-xl"><Pencil size={14}/></button>
                 <button onClick={()=>remove(c.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl"><Trash2 size={14}/></button>
               </div>
@@ -774,6 +816,38 @@ const ClubsTab = ({ adminToken }) => {
                 ))}
                 <div><label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Description</label>
                 <textarea rows={3} value={form.description} onChange={e=>setForm(p=>({...p,description:e.target.value}))} className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"/></div>
+                <div className="pt-2 border-t border-slate-100">
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Initiatives / Projects</label>
+                    <button onClick={() => setForm((prev) => ({ ...prev, projects: [...prev.projects, { title: "", date: "", description: "" }] }))} className="text-xs font-bold text-primary flex items-center gap-1"><Plus size={12}/> Add</button>
+                  </div>
+                  <div className="space-y-3">
+                    {form.projects.map((project, idx) => (
+                      <div key={`project-${idx}`} className="p-3 rounded-xl border border-slate-100 bg-slate-50 space-y-2">
+                        <input type="text" placeholder="Title" value={project.title} onChange={(e)=>setForm((prev)=>({ ...prev, projects: prev.projects.map((item,pidx)=>pidx===idx?{...item,title:e.target.value}:item) }))} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                        <input type="text" placeholder="Date (optional)" value={project.date} onChange={(e)=>setForm((prev)=>({ ...prev, projects: prev.projects.map((item,pidx)=>pidx===idx?{...item,date:e.target.value}:item) }))} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                        <textarea rows={2} placeholder="Description" value={project.description} onChange={(e)=>setForm((prev)=>({ ...prev, projects: prev.projects.map((item,pidx)=>pidx===idx?{...item,description:e.target.value}:item) }))} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none" />
+                        {form.projects.length > 1 && <button onClick={() => setForm((prev) => ({ ...prev, projects: prev.projects.filter((_, pidx) => pidx !== idx) }))} className="text-[11px] font-bold text-red-600">Remove Initiative</button>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="pt-2 border-t border-slate-100">
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Leadership</label>
+                    <button onClick={() => setForm((prev) => ({ ...prev, leadership: [...prev.leadership, { name: "", role: "", email: "" }] }))} className="text-xs font-bold text-primary flex items-center gap-1"><Plus size={12}/> Add</button>
+                  </div>
+                  <div className="space-y-3">
+                    {form.leadership.map((leader, idx) => (
+                      <div key={`leader-${idx}`} className="p-3 rounded-xl border border-slate-100 bg-slate-50 space-y-2">
+                        <input type="text" placeholder="Name" value={leader.name} onChange={(e)=>setForm((prev)=>({ ...prev, leadership: prev.leadership.map((item,lidx)=>lidx===idx?{...item,name:e.target.value}:item) }))} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                        <input type="text" placeholder="Role" value={leader.role} onChange={(e)=>setForm((prev)=>({ ...prev, leadership: prev.leadership.map((item,lidx)=>lidx===idx?{...item,role:e.target.value}:item) }))} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                        <input type="email" placeholder="Email (optional)" value={leader.email} onChange={(e)=>setForm((prev)=>({ ...prev, leadership: prev.leadership.map((item,lidx)=>lidx===idx?{...item,email:e.target.value}:item) }))} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                        {form.leadership.length > 1 && <button onClick={() => setForm((prev) => ({ ...prev, leadership: prev.leadership.filter((_, lidx) => lidx !== idx) }))} className="text-[11px] font-bold text-red-600">Remove Leader</button>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input type="checkbox" checked={form.is_accepting} onChange={e=>setForm(p=>({...p,is_accepting:e.target.checked}))} className="w-4 h-4 rounded"/>
                   <span className="text-sm font-semibold text-slate-700">Accepting Applications</span>
@@ -781,41 +855,6 @@ const ClubsTab = ({ adminToken }) => {
                 <div className="flex gap-3 pt-2">
                   <button onClick={()=>setShowForm(false)} className="flex-1 py-3 bg-slate-100 text-slate-700 font-bold rounded-2xl">Cancel</button>
                   <button onClick={save} className="flex-1 py-3 bg-primary text-white font-bold rounded-2xl">{editing?"Save":"Create"}</button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Recruitment Form */}
-      <AnimatePresence>
-        {recClub && (
-          <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={()=>setRecClub(null)}>
-            <motion.div initial={{opacity:0,scale:0.9}} animate={{opacity:1,scale:1}} exit={{opacity:0,scale:0.9}}
-              className="bg-white rounded-3xl shadow-2xl w-full max-w-md"
-              onClick={e=>e.stopPropagation()}>
-              <div className="bg-primary p-6 rounded-t-3xl text-white">
-                <h2 className="text-xl font-bold">Recruitment Window</h2>
-                <p className="text-white/70 text-sm mt-1">{recClub.name}</p>
-              </div>
-              <div className="p-6 space-y-5">
-                <label className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl cursor-pointer">
-                  <input type="checkbox" checked={recForm.recruitment_open} onChange={e=>setRecForm(p=>({...p,recruitment_open:e.target.checked}))} className="w-5 h-5 rounded"/>
-                  <div>
-                    <p className="font-bold text-primary">Recruitment Open</p>
-                    <p className="text-xs text-slate-400">Enable/disable the Apply button on club page</p>
-                  </div>
-                </label>
-                <div><label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Start Date</label>
-                <input type="datetime-local" value={recForm.start_date} onChange={e=>setRecForm(p=>({...p,start_date:e.target.value}))} className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none"/></div>
-                <div><label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">End Date</label>
-                <input type="datetime-local" value={recForm.end_date} onChange={e=>setRecForm(p=>({...p,end_date:e.target.value}))} className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none"/></div>
-                <div className="flex gap-3">
-                  <button onClick={()=>setRecClub(null)} className="flex-1 py-3 bg-slate-100 text-slate-700 font-bold rounded-2xl">Cancel</button>
-                  <button onClick={saveRec} className="flex-1 py-3 bg-primary text-white font-bold rounded-2xl">Save</button>
                 </div>
               </div>
             </motion.div>

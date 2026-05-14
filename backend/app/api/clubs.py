@@ -5,7 +5,7 @@ from sqlalchemy.orm import selectinload
 from typing import List, Optional
 
 from app.db.session import get_db
-from app.models.models import Club, Project
+from app.models.models import Club
 from app.schemas.club import Club as ClubSchema
 
 router = APIRouter()
@@ -15,12 +15,15 @@ async def get_clubs(
     category: Optional[str] = None,
     db: AsyncSession = Depends(get_db)
 ):
-    query = select(Club).options(selectinload(Club.projects))
+    query = select(Club).options(
+        selectinload(Club.projects),
+        selectinload(Club.leadership),
+    )
     if category and category != "All":
         query = query.where(Club.category == category)
     
     result = await db.execute(query)
-    return result.scalars().all()
+    return result.scalars().unique().all()
 
 @router.get("/{slug}", response_model=ClubSchema)
 async def get_club_by_slug(
@@ -30,7 +33,10 @@ async def get_club_by_slug(
     result = await db.execute(
         select(Club)
         .where(Club.slug == slug)
-        .options(selectinload(Club.projects))
+        .options(
+            selectinload(Club.projects),
+            selectinload(Club.leadership),
+        )
     )
     club = result.scalars().first()
     

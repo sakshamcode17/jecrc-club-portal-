@@ -49,7 +49,8 @@ class Club(Base):
     
     # Relationships
     members = relationship("User", secondary=club_members, back_populates="clubs")
-    projects = relationship("Project", back_populates="club")
+    projects = relationship("Project", back_populates="club", cascade="all, delete-orphan")
+    leadership = relationship("ClubLeader", back_populates="club", cascade="all, delete-orphan")
     applications = relationship("Application", back_populates="club")
     events = relationship("Event", back_populates="club")
     directory_entries = relationship("Directory", back_populates="club")
@@ -65,6 +66,19 @@ class Project(Base):
     
     # Relationships
     club = relationship("Club", back_populates="projects")
+
+
+class ClubLeader(Base):
+    __tablename__ = "club_leaders"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    role = Column(String, nullable=False)
+    email = Column(String, nullable=True)
+    club_id = Column(Integer, ForeignKey("clubs.id"), nullable=False)
+
+    # Relationships
+    club = relationship("Club", back_populates="leadership")
 
 class Event(Base):
     __tablename__ = "events"

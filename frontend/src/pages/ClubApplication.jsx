@@ -21,14 +21,12 @@ import axios from 'axios';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import useAuthStore from '../store/authStore';
-import { clubs } from '../utils/clubData';
 
 const ClubApplication = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { user, token } = useAuthStore();
-  
-  const club = clubs.find(c => c.slug === slug);
+  const [club, setClub] = useState(null);
   
   const [formData, setFormData] = useState({
     name: user?.full_name || user?.name || '',
@@ -44,7 +42,6 @@ const ClubApplication = () => {
     availability: '',
   });
 
-  const [realClubId, setRealClubId] = useState(null);
   const [resume, setResume] = useState(null);
   const [resumeName, setResumeName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -55,7 +52,7 @@ const ClubApplication = () => {
     const fetchClub = async () => {
       try {
         const response = await axios.get(`http://localhost:8000/api/clubs/${slug}`);
-        setRealClubId(response.data.id);
+        setClub(response.data);
       } catch (err) {
         console.error("Error fetching club details:", err);
         setError("Could not find club information. Please try again later.");
@@ -96,14 +93,20 @@ const ClubApplication = () => {
       return;
     }
 
-    if (!realClubId) {
+    if (!club?.id) {
       setError('Club information is still loading. Please wait a moment.');
       setLoading(false);
       return;
     }
 
+    if (!club.is_accepting) {
+      setError('Recruitment for this club is currently closed.');
+      setLoading(false);
+      return;
+    }
+
     const data = new FormData();
-    data.append('club_id', realClubId);
+    data.append('club_id', club.id);
     data.append('position', formData.position);
     data.append('motivation', formData.motivation);
     data.append('skills', formData.skills);
@@ -438,7 +441,7 @@ const ClubApplication = () => {
           >
             <button 
               type="submit"
-              disabled={loading}
+              disabled={loading || !club?.is_accepting}
               className="w-full md:w-auto md:px-12 bg-primary text-white font-bold py-4 rounded-2xl hover:bg-primary/90 transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-70"
             >
               {loading ? (

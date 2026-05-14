@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { ExternalLink, Filter } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { clubs } from '../utils/clubData';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import useUIStore from '../store/uiStore';
@@ -12,27 +11,33 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { searchQuery, selectedCategory, setSelectedCategory } = useUIStore();
   const [upcomingEvents, setUpcomingEvents] = React.useState([]);
+  const [clubs, setClubs] = React.useState([]);
 
   React.useEffect(() => {
-    const fetchUpcoming = async () => {
+    const fetchData = async () => {
       try {
-        const res = await axios.get('http://localhost:8000/api/events/?status_filter=upcoming');
-        setUpcomingEvents(res.data.slice(0, 3));
+        const [eventsRes, clubsRes] = await Promise.all([
+          axios.get('http://localhost:8000/api/events/?status_filter=upcoming'),
+          axios.get('http://localhost:8000/api/clubs/'),
+        ]);
+        setUpcomingEvents(eventsRes.data.slice(0, 3));
+        setClubs(clubsRes.data);
       } catch (err) {
-        console.error("Failed to fetch upcoming events:", err);
+        console.error('Failed to fetch dashboard data:', err);
       }
     };
-    fetchUpcoming();
+
+    fetchData();
   }, []);
 
-  const filteredClubs = clubs.filter(club => {
+  const filteredClubs = clubs.filter((club) => {
     const matchesSearch = club.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                          club.category.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || club.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const categories = ["All", "Technical", "Cultural", "Social", "Entrepreneurship", "Sports", "Media", "Music"];
+  const categories = ['All', ...new Set(clubs.map((club) => club.category).filter(Boolean))];
 
   return (
     <div className="bg-slate-50 min-h-screen flex flex-col font-sora">
@@ -140,15 +145,15 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              whileHover={club.hasDetailPage ? { y: -10 } : {}}
-              className={`group bg-white rounded-2xl p-4 shadow-xl border border-transparent ${club.hasDetailPage ? 'hover:border-secondary cursor-pointer' : 'opacity-90'} transition-all duration-300 flex flex-col h-full`}
-              onClick={() => club.hasDetailPage && navigate(`/clubs/${club.slug}`)}
+              whileHover={{ y: -10 }}
+              className="group bg-white rounded-2xl p-4 shadow-xl border border-transparent hover:border-secondary cursor-pointer transition-all duration-300 flex flex-col h-full"
+              onClick={() => navigate(`/clubs/${club.slug}`)}
             >
               <div className="mb-6 relative rounded-xl overflow-hidden h-52 bg-slate-50 flex items-center justify-center p-8">
                 <img 
                   alt={club.name} 
-                  className={`max-w-full max-h-full object-contain ${club.hasDetailPage ? 'group-hover:scale-110' : ''} transition-transform duration-500`} 
-                  src={club.image}
+                  className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-500"
+                  src={club.logo_url || club.banner_url || '/logo.png'}
                 />
                 <div className="absolute top-4 left-4 bg-primary/90 text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider backdrop-blur-md">
                   {club.category}
@@ -157,11 +162,11 @@ const Dashboard = () => {
               <h3 className="text-2xl font-bold mb-3 text-gray-900 group-hover:text-primary transition-colors">{club.name}</h3>
               <p className="text-gray-500 text-sm leading-relaxed flex-grow mb-6">{club.description}</p>
               
-              {club.initiatives && (
+              {club.projects?.length > 0 && (
                 <div className="mb-6 flex flex-wrap gap-2">
-                  {club.initiatives.map((init) => (
-                    <span key={init} className="px-3 py-1 bg-slate-50 text-[10px] font-bold text-gray-400 rounded-lg border border-gray-100">
-                      {init}
+                  {club.projects.slice(0, 3).map((project) => (
+                    <span key={project.id || project.title} className="px-3 py-1 bg-slate-50 text-[10px] font-bold text-gray-400 rounded-lg border border-gray-100">
+                      {project.title}
                     </span>
                   ))}
                 </div>
@@ -175,17 +180,13 @@ const Dashboard = () => {
                     </div>
                   ))}
                   <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-bold border-2 border-white text-gray-500">
-                    +{club.members || 10}
+                    +{club.leadership?.length || 10}
                   </div>
                 </div>
-                {club.hasDetailPage ? (
-                  <button className="text-primary font-bold text-sm hover:text-secondary transition-all flex items-center gap-1">
-                    View Details
-                    <ExternalLink size={16} />
-                  </button>
-                ) : (
-                  <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest italic">Info Only</span>
-                )}
+                <button className="text-primary font-bold text-sm hover:text-secondary transition-all flex items-center gap-1">
+                  View Details
+                  <ExternalLink size={16} />
+                </button>
               </div>
             </motion.div>
           ))}

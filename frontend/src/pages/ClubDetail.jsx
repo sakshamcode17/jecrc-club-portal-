@@ -12,6 +12,12 @@ const ClubDetail = () => {
   const [club, setClub] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const [clubEvents, setClubEvents] = React.useState([]);
+  const resolveClubImage = (url) => {
+    if (!url) return "";
+    if (url.startsWith("http")) return url;
+    if (url.startsWith("/uploads")) return `http://localhost:8000${url}`;
+    return url;
+  };
 
   React.useEffect(() => {
     const fetchClubData = async () => {
@@ -78,7 +84,7 @@ const ClubDetail = () => {
           <img 
             alt={club.name} 
             className="w-full h-full object-cover" 
-            src={club.banner_url || club.logo_url || '/logo.png'}
+            src={resolveClubImage(club.banner_url || club.logo_url) || '/logo.png'}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/40 to-transparent flex flex-col justify-end p-12">
             <motion.div 

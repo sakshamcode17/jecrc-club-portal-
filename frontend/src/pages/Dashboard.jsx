@@ -12,6 +12,12 @@ const Dashboard = () => {
   const { searchQuery, selectedCategory, setSelectedCategory } = useUIStore();
   const [upcomingEvents, setUpcomingEvents] = React.useState([]);
   const [clubs, setClubs] = React.useState([]);
+  const resolveClubImage = (url) => {
+    if (!url) return "";
+    if (url.startsWith("http")) return url;
+    if (url.startsWith("/uploads")) return `http://localhost:8000${url}`;
+    return url;
+  };
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -153,7 +159,7 @@ const Dashboard = () => {
                 <img 
                   alt={club.name} 
                   className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-500"
-                  src={club.logo_url || club.banner_url || '/logo.png'}
+                  src={resolveClubImage(club.logo_url || club.banner_url) || '/logo.png'}
                 />
                 <div className="absolute top-4 left-4 bg-primary/90 text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider backdrop-blur-md">
                   {club.category}
@@ -172,17 +178,7 @@ const Dashboard = () => {
                 </div>
               )}
 
-              <div className="flex items-center justify-between pt-6 border-t border-gray-100">
-                <div className="flex -space-x-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-gray-200 overflow-hidden">
-                      <img src={`https://i.pravatar.cc/100?img=${i + index * 10}`} alt="member" />
-                    </div>
-                  ))}
-                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-bold border-2 border-white text-gray-500">
-                    +{club.leadership?.length || 10}
-                  </div>
-                </div>
+              <div className="flex items-center justify-end pt-6 border-t border-gray-100">
                 <button className="text-primary font-bold text-sm hover:text-secondary transition-all flex items-center gap-1">
                   View Details
                   <ExternalLink size={16} />

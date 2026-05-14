@@ -36,8 +36,11 @@ const ApplicationsTab = ({ adminToken }) => {
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
   const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] = useState("All");
+  const [activeSection, setActiveSection] = useState("Pending");
   const [filterClub, setFilterClub] = useState("All");
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkStatus, setBulkStatus] = useState("Interview Scheduled");
+  const [bulkLoading, setBulkLoading] = useState(false);
   const [selectedApp, setSelectedApp] = useState(null);
   const [error, setError] = useState(null);
   const client = api(adminToken);
@@ -58,54 +61,93 @@ const ApplicationsTab = ({ adminToken }) => {
     try {
       const r = await client.put(`applications/${id}/status`, { status });
       setApplications(p => p.map(a => a.id === id ? { ...a, ...r.data } : a));
+      setSelectedIds((prev) => prev.filter((item) => item !== id));
       if (selectedApp?.id === id) setSelectedApp(p => ({ ...p, ...r.data }));
     } catch { alert("Failed to update status."); }
     finally { setUpdatingId(null); }
   };
 
+  const sectionStatuses = ["Pending", "Accepted", "Rejected", "Interview Scheduled"];
+
   const filtered = applications.filter(a => {
     const q = search.toLowerCase();
-    return (filterStatus === "All" || a.status === filterStatus)
+    return (a.status === activeSection)
       && (filterClub === "All" || a.club_name === filterClub)
       && (!search || [a.student_name,a.student_email,a.club_name,a.position].some(v => v?.toLowerCase().includes(q)));
   });
 
-  const stats = { total:applications.length, pending:applications.filter(a=>a.status==="Pending").length,
-    review:applications.filter(a=>a.status==="Under Review").length,
-    accepted:applications.filter(a=>a.status==="Accepted").length,
-    rejected:applications.filter(a=>a.status==="Rejected").length };
+  useEffect(() => {
+    setSelectedIds((prev) => prev.filter((id) => filtered.some((item) => item.id === id)));
+  }, [activeSection, search, filterClub, applications]);
+
+  const stats = {
+    Pending: applications.filter(a=>a.status==="Pending").length,
+    Accepted: applications.filter(a=>a.status==="Accepted").length,
+    Rejected: applications.filter(a=>a.status==="Rejected").length,
+    "Interview Scheduled": applications.filter(a=>a.status==="Interview Scheduled").length,
+  };
+
+  const allSelected = filtered.length > 0 && selectedIds.length === filtered.length;
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds([]);
+      return;
+    }
+    setSelectedIds(filtered.map((app) => app.id));
+  };
+
+  const toggleSelectOne = (id) => {
+    setSelectedIds((prev) => prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]);
+  };
+
+  const bulkUpdateStatus = async () => {
+    if (selectedIds.length === 0) {
+      alert("Select at least one application.");
+      return;
+    }
+    setBulkLoading(true);
+    try {
+      await client.put("applications/bulk-status", {
+        application_ids: selectedIds,
+        status: bulkStatus,
+      });
+      setSelectedIds([]);
+      fetchData();
+    } catch (e) {
+      alert(e.response?.data?.detail || "Failed to apply bulk status update.");
+    } finally {
+      setBulkLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        {[
-          {label:"Total",value:stats.total,bg:"bg-primary",text:"text-white"},
-          {label:"Pending",value:stats.pending,bg:"bg-slate-100",text:"text-slate-700"},
-          {label:"Under Review",value:stats.review,bg:"bg-purple-50",text:"text-purple-700"},
-          {label:"Accepted",value:stats.accepted,bg:"bg-emerald-50",text:"text-emerald-700"},
-          {label:"Rejected",value:stats.rejected,bg:"bg-red-50",text:"text-red-700"},
-        ].map(s => (
-          <div key={s.label} className={`${s.bg} ${s.text} rounded-2xl p-5 shadow-sm border border-black/5`}>
-            <p className="text-3xl font-extrabold">{s.value}</p>
-            <p className="text-xs font-bold uppercase tracking-wider opacity-60 mt-1">{s.label}</p>
-          </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {sectionStatuses.map((status) => (
+          <button
+            key={status}
+            onClick={() => setActiveSection(status)}
+            className={`rounded-2xl p-5 shadow-sm border text-left transition-all ${
+              activeSection === status
+                ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
+                : "bg-white text-slate-700 border-slate-200 hover:border-primary/30"
+            }`}
+          >
+            <p className="text-3xl font-extrabold">{stats[status]}</p>
+            <p className="text-xs font-bold uppercase tracking-wider opacity-70 mt-1">{status}</p>
+          </button>
         ))}
       </div>
 
       {/* Filters */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
-        <div className="flex flex-wrap gap-3 items-center">
+        <div className="flex flex-wrap gap-3 items-center mb-3">
           <div className="relative flex-grow min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search students, clubs..."
               className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
           </div>
-          <select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}
-            className="border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none">
-            <option value="All">All Statuses</option>
-            {STATUSES.map(s=><option key={s}>{s}</option>)}
-          </select>
           <select value={filterClub} onChange={e=>setFilterClub(e.target.value)}
             className="border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none">
             <option value="All">All Clubs</option>
@@ -115,12 +157,25 @@ const ApplicationsTab = ({ adminToken }) => {
             <RefreshCw size={14} className={loading?"animate-spin":""} /> Refresh
           </button>
         </div>
+        <div className="flex flex-wrap gap-3 items-center">
+          <select value={bulkStatus} onChange={e=>setBulkStatus(e.target.value)}
+            className="border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none">
+            {STATUSES.map(s=><option key={s}>{s}</option>)}
+          </select>
+          <button
+            onClick={bulkUpdateStatus}
+            disabled={bulkLoading || selectedIds.length === 0}
+            className="px-4 py-2.5 rounded-xl text-sm font-bold bg-primary text-white disabled:opacity-50"
+          >
+            {bulkLoading ? "Applying..." : `Apply To Selected (${selectedIds.length})`}
+          </button>
+        </div>
       </div>
 
       {/* Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100">
-          <h2 className="font-bold text-primary">Applications <span className="text-slate-400 font-normal text-sm">({filtered.length})</span></h2>
+          <h2 className="font-bold text-primary">{activeSection} Applications <span className="text-slate-400 font-normal text-sm">({filtered.length})</span></h2>
         </div>
         {loading ? (
           <div className="flex items-center justify-center py-20 text-slate-400"><Loader2 className="animate-spin mr-2" size={28}/>Loading...</div>
@@ -130,7 +185,7 @@ const ApplicationsTab = ({ adminToken }) => {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-slate-50 border-b border-slate-100">
-                <tr>{["#","Student","Club","Role","Applied","Status","Update",""].map(h=>(
+                <tr>{["", "#","Student","Club","Role","Applied","Status","Update",""].map(h=>(
                   <th key={h} className="px-5 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">{h}</th>
                 ))}</tr>
               </thead>
@@ -139,6 +194,14 @@ const ApplicationsTab = ({ adminToken }) => {
                   const sc = STATUS_CONFIG[app.status]||STATUS_CONFIG.Pending;
                   return (
                     <tr key={app.id} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="px-5 py-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(app.id)}
+                          onChange={() => toggleSelectOne(app.id)}
+                          className="w-4 h-4"
+                        />
+                      </td>
                       <td className="px-5 py-4 text-slate-400 font-mono text-xs">{app.id}</td>
                       <td className="px-5 py-4">
                         <p className="font-bold text-primary">{app.student_name||"N/A"}</p>
@@ -174,6 +237,12 @@ const ApplicationsTab = ({ adminToken }) => {
                 })}
               </tbody>
             </table>
+            <div className="px-5 py-3 border-t border-slate-100 bg-slate-50">
+              <label className="text-xs font-semibold text-slate-600 inline-flex items-center gap-2">
+                <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="w-4 h-4" />
+                Select all rows in this section
+              </label>
+            </div>
           </div>
         )}
       </div>
@@ -564,38 +633,67 @@ const StudentsTab = ({ adminToken }) => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [branchFilter, setBranchFilter] = useState("All");
+  const [semesterFilter, setSemesterFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ email:"", password:"", full_name:"", enrollment_no:"", branch:"", semester:"", contact:"" });
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [generatedCredentials, setGeneratedCredentials] = useState(null);
+  const [form, setForm] = useState({ email:"", full_name:"", enrollment_no:"", branch:"", semester:"", contact:"", is_active:true });
   const client = api(adminToken);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const r = await client.get(`/students${search?`?search=${search}`:""}`);
+      const params = new URLSearchParams();
+      if (search) params.append("search", search);
+      if (branchFilter !== "All") params.append("branch", branchFilter);
+      if (semesterFilter !== "All") params.append("semester", semesterFilter);
+      if (statusFilter !== "All") params.append("is_active", statusFilter === "Active" ? "true" : "false");
+      const query = params.toString();
+      const r = await client.get(`/students${query ? `?${query}` : ""}`);
       setStudents(r.data);
     } catch { } finally { setLoading(false); }
-  }, [adminToken, search]);
+  }, [adminToken, search, branchFilter, semesterFilter, statusFilter]);
 
   useEffect(() => { const t = setTimeout(fetchData, 300); return ()=>clearTimeout(t); }, [fetchData]);
 
-  const openCreate = () => { setEditing(null); setForm({email:"",password:"",full_name:"",enrollment_no:"",branch:"",semester:"",contact:""}); setShowForm(true); };
-  const openEdit = (s) => { setEditing(s); setForm({email:s.email,password:"",full_name:s.full_name||"",enrollment_no:s.enrollment_no||"",branch:s.branch||"",semester:s.semester||"",contact:s.contact||""}); setShowForm(true); };
+  const openCreate = () => { setEditing(null); setForm({email:"",full_name:"",enrollment_no:"",branch:"",semester:"",contact:"",is_active:true}); setShowForm(true); };
+  const openEdit = (s) => { setEditing(s); setForm({email:s.email,full_name:s.full_name||"",enrollment_no:s.enrollment_no||"",branch:s.branch||"",semester:s.semester||"",contact:s.contact||"",is_active:s.is_active}); setShowForm(true); };
 
   const save = async () => {
     try {
-      if (editing) { const {email,password,...rest}=form; await client.put(`students/${editing.id}`, rest); }
-      else { await client.post("students", form); }
+      if (editing) {
+        await client.put(`students/${editing.id}`, form);
+      } else {
+        const response = await client.post("students", form);
+        setGeneratedCredentials(response.data);
+      }
       setShowForm(false); fetchData();
     } catch (e) { alert(e.response?.data?.detail||"Failed to save."); }
   };
   const remove = async (id) => { if (!confirm("Delete student?")) return; await client.delete(`students/${id}`); fetchData(); };
+
+  const uniqueBranches = ["All", ...new Set(students.map((student) => student.branch).filter(Boolean))];
+  const uniqueSemesters = ["All", ...new Set(students.map((student) => student.semester).filter(Boolean))];
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-4 justify-between items-center">
         <h2 className="text-xl font-bold text-primary">Manage Students</h2>
         <div className="flex gap-3">
+          <select value={branchFilter} onChange={e=>setBranchFilter(e.target.value)} className="border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none">
+            {uniqueBranches.map((branch) => <option key={branch} value={branch}>{branch === "All" ? "All Branches" : branch}</option>)}
+          </select>
+          <select value={semesterFilter} onChange={e=>setSemesterFilter(e.target.value)} className="border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none">
+            {uniqueSemesters.map((semester) => <option key={semester} value={semester}>{semester === "All" ? "All Semesters" : semester}</option>)}
+          </select>
+          <select value={statusFilter} onChange={e=>setStatusFilter(e.target.value)} className="border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none">
+            <option value="All">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14}/>
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search students..."
@@ -638,6 +736,7 @@ const StudentsTab = ({ adminToken }) => {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex gap-2">
+                        <button onClick={()=>setSelectedStudent(s)} className="p-1.5 text-slate-400 hover:text-primary hover:bg-slate-100 rounded-lg"><Eye size={13}/></button>
                         <button onClick={()=>openEdit(s)} className="p-1.5 text-slate-400 hover:text-primary hover:bg-slate-100 rounded-lg"><Pencil size={13}/></button>
                         <button onClick={()=>remove(s.id)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg"><Trash2 size={13}/></button>
                       </div>
@@ -660,18 +759,78 @@ const StudentsTab = ({ adminToken }) => {
               onClick={e=>e.stopPropagation()}>
               <div className="bg-primary p-6 rounded-t-3xl text-white"><h2 className="text-xl font-bold">{editing?"Edit Student":"Add Student"}</h2></div>
               <div className="p-6 space-y-4">
-                {!editing && <div><label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Email *</label>
-                  <input type="email" value={form.email} onChange={e=>setForm(p=>({...p,email:e.target.value}))} className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/></div>}
-                {!editing && <div><label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Password *</label>
-                  <input type="password" value={form.password} onChange={e=>setForm(p=>({...p,password:e.target.value}))} className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/></div>}
+                <div><label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Email *</label>
+                  <input type="email" value={form.email} onChange={e=>setForm(p=>({...p,email:e.target.value}))} className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/></div>
                 {[{label:"Full Name",key:"full_name"},{label:"Enrollment No",key:"enrollment_no"},{label:"Branch",key:"branch"},{label:"Semester",key:"semester"},{label:"Contact",key:"contact"}].map(({label,key})=>(
                   <div key={key}><label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">{label}</label>
                   <input type="text" value={form[key]} onChange={e=>setForm(p=>({...p,[key]:e.target.value}))} className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/></div>
                 ))}
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input type="checkbox" checked={form.is_active} onChange={e=>setForm(p=>({...p,is_active:e.target.checked}))} className="w-4 h-4 rounded"/>
+                  <span className="text-sm font-semibold text-slate-700">Active Student Account</span>
+                </label>
                 <div className="flex gap-3 pt-2">
                   <button onClick={()=>setShowForm(false)} className="flex-1 py-3 bg-slate-100 text-slate-700 font-bold rounded-2xl">Cancel</button>
                   <button onClick={save} className="flex-1 py-3 bg-primary text-white font-bold rounded-2xl">{editing?"Save":"Add"}</button>
                 </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {selectedStudent && (
+          <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={()=>setSelectedStudent(null)}>
+            <motion.div initial={{opacity:0,scale:0.9}} animate={{opacity:1,scale:1}} exit={{opacity:0,scale:0.9}}
+              className="bg-white rounded-3xl shadow-2xl w-full max-w-lg"
+              onClick={e=>e.stopPropagation()}>
+              <div className="bg-primary p-6 rounded-t-3xl text-white">
+                <h2 className="text-xl font-bold">Student Details</h2>
+              </div>
+              <div className="p-6 grid grid-cols-2 gap-3">
+                {[
+                  {label:"Name", value:selectedStudent.full_name || "N/A"},
+                  {label:"Email", value:selectedStudent.email},
+                  {label:"Enrollment", value:selectedStudent.enrollment_no || "N/A"},
+                  {label:"Branch", value:selectedStudent.branch || "N/A"},
+                  {label:"Semester", value:selectedStudent.semester || "N/A"},
+                  {label:"Contact", value:selectedStudent.contact || "N/A"},
+                  {label:"Status", value:selectedStudent.is_active ? "Active" : "Inactive"},
+                ].map((item) => (
+                  <div key={item.label} className="bg-slate-50 rounded-xl p-3">
+                    <p className="text-xs text-slate-400 mb-1">{item.label}</p>
+                    <p className="font-semibold text-slate-700 text-sm break-words">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="px-6 pb-6">
+                <button onClick={()=>setSelectedStudent(null)} className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl">Close</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {generatedCredentials && (
+          <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={()=>setGeneratedCredentials(null)}>
+            <motion.div initial={{opacity:0,scale:0.9}} animate={{opacity:1,scale:1}} exit={{opacity:0,scale:0.9}}
+              className="bg-white rounded-3xl shadow-2xl w-full max-w-md"
+              onClick={e=>e.stopPropagation()}>
+              <div className="bg-primary p-6 rounded-t-3xl text-white">
+                <h2 className="text-xl font-bold">Generated Credentials</h2>
+                <p className="text-white/70 text-sm mt-1">Shown once for admin handover.</p>
+              </div>
+              <div className="p-6 space-y-3">
+                <div className="bg-slate-50 rounded-xl p-3"><p className="text-xs text-slate-400">Username</p><p className="font-bold text-slate-700">{generatedCredentials.generated_username}</p></div>
+                <div className="bg-slate-50 rounded-xl p-3"><p className="text-xs text-slate-400">Login Identifier</p><p className="font-bold text-slate-700">{generatedCredentials.login_identifier}</p></div>
+                <div className="bg-slate-50 rounded-xl p-3"><p className="text-xs text-slate-400">Default Password</p><p className="font-bold text-slate-700">{generatedCredentials.generated_password}</p></div>
+                <button onClick={()=>setGeneratedCredentials(null)} className="w-full py-3 bg-primary text-white font-bold rounded-2xl">Done</button>
               </div>
             </motion.div>
           </motion.div>
@@ -690,6 +849,7 @@ const ClubsTab = ({ adminToken }) => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [form, setForm] = useState({
     name: "",
     slug: "",
@@ -702,6 +862,12 @@ const ClubsTab = ({ adminToken }) => {
     leadership: [{ name: "", role: "", email: "" }],
   });
   const client = api(adminToken);
+  const resolveLogoSrc = (url) => {
+    if (!url) return "";
+    if (url.startsWith("http")) return url;
+    if (url.startsWith("/uploads")) return `http://localhost:8000${url}`;
+    return url;
+  };
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -755,6 +921,25 @@ const ClubsTab = ({ adminToken }) => {
     } catch(e) { alert(e.response?.data?.detail||"Failed to save."); }
   };
   const remove = async (id) => { if (!confirm("Delete club?")) return; await client.delete(`clubs/${id}`); fetchData(); };
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("file", file);
+    setUploadingLogo(true);
+    try {
+      const response = await client.post("clubs/upload-logo", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setForm((prev) => ({ ...prev, logo_url: response.data.logo_url }));
+    } catch (err) {
+      const detail = err.response?.data?.detail;
+      const message = typeof detail === "string" ? detail : "Upload failed. Use JPG/PNG/WEBP up to 5MB.";
+      alert(message);
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
   const toggleRecruitment = async (club) => {
     try {
       await client.put(`clubs/${club.id}/recruitment`, { is_accepting: !club.is_accepting });
@@ -774,7 +959,7 @@ const ClubsTab = ({ adminToken }) => {
           {clubs.map(c => (
             <div key={c.id} className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
               <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center overflow-hidden flex-shrink-0 border border-slate-100">
-                {c.logo_url ? <img src={c.logo_url} alt={c.name} className="w-full h-full object-contain p-1"/> : <Building2 size={20} className="text-slate-400"/>}
+                {c.logo_url ? <img src={resolveLogoSrc(c.logo_url)} alt={c.name} className="w-full h-full object-contain p-1"/> : <Building2 size={20} className="text-slate-400"/>}
               </div>
               <div className="flex-grow">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -810,10 +995,27 @@ const ClubsTab = ({ adminToken }) => {
               onClick={e=>e.stopPropagation()}>
               <div className="bg-primary p-6 rounded-t-3xl text-white"><h2 className="text-xl font-bold">{editing?"Edit Club":"Add Club"}</h2></div>
               <div className="p-6 space-y-4">
-                {[{label:"Club Name",key:"name"},{label:"Slug (URL)",key:"slug"},{label:"Category",key:"category"},{label:"Tagline",key:"tagline"},{label:"Logo URL",key:"logo_url"}].map(({label,key})=>(
+                {[{label:"Club Name",key:"name"},{label:"Slug (URL)",key:"slug"},{label:"Category",key:"category"},{label:"Tagline",key:"tagline"}].map(({label,key})=>(
                   <div key={key}><label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">{label}</label>
                   <input type="text" value={form[key]} onChange={e=>setForm(p=>({...p,[key]:e.target.value}))} className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/></div>
                 ))}
+                <div>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Club Logo</label>
+                  <div className="flex items-center gap-3">
+                    <label className="px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold cursor-pointer hover:bg-slate-50">
+                      {uploadingLogo ? "Uploading..." : "Upload Logo"}
+                      <input type="file" accept=".jpg,.jpeg,.png,.webp" onChange={handleLogoUpload} className="hidden" />
+                    </label>
+                    {form.logo_url && (
+                      <img
+                        src={resolveLogoSrc(form.logo_url)}
+                        alt="Club logo preview"
+                        className="w-12 h-12 rounded-xl object-contain border border-slate-200 bg-slate-50"
+                      />
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">Accepted: JPG, PNG, WEBP (max 5MB)</p>
+                </div>
                 <div><label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Description</label>
                 <textarea rows={3} value={form.description} onChange={e=>setForm(p=>({...p,description:e.target.value}))} className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"/></div>
                 <div className="pt-2 border-t border-slate-100">

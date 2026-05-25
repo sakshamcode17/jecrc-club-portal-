@@ -1,5 +1,4 @@
 from pydantic_settings import BaseSettings
-from typing import List
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "JECRC Club Hub"
@@ -9,6 +8,9 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 43200
     
     DATABASE_URL: str = "sqlite+aiosqlite:///./sql_app.db"
+    DB_USE_NULL_POOL: bool = False
+    DB_DISABLE_PREPARED_STATEMENTS: bool = False
+    SQL_ECHO: bool = False
     
     # Cloudinary
     CLOUDINARY_CLOUD_NAME: str = ""
